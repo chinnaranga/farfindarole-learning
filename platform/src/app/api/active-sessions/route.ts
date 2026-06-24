@@ -1,3 +1,5 @@
+export const runtime = 'edge'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { registerSession, getActiveSessions } from '@/lib/server-store'
 

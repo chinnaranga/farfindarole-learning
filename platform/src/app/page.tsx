@@ -1,3 +1,5 @@
+export const runtime = 'edge'
+
 import { getCourses } from '@/lib/supabase'
 import Link from 'next/link'
 import { BookOpen, Calendar, Clock, BarChart3, ArrowRight, Zap, Target, Briefcase } from 'lucide-react'

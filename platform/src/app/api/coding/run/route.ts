@@ -1,6 +1,7 @@
+export const runtime = 'edge'
+
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import vm from 'vm';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -51,6 +52,7 @@ function deepEqual(val1: any, val2: any): boolean {
 
 // Map languages to Piston runner values
 const PISTON_LANG_MAP: Record<string, { language: string; version: string }> = {
+  javascript: { language: 'javascript', version: '18.15.0' },
   python: { language: 'python', version: '3.10.0' },
   typescript: { language: 'typescript', version: '5.0.3' },
   cpp: { language: 'c++', version: '10.2.0' },
@@ -105,90 +107,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No public test cases found for this challenge' }, { status: 400 });
     }
 
-    // 2. Execute JavaScript natively via vm module
-    if (language === 'javascript') {
-      const logs: string[] = [];
-      const sandbox = {
-        console: {
-          log: (...args: any[]) => logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')),
-          error: (...args: any[]) => logs.push('[ERROR] ' + args.map(a => String(a)).join(' ')),
-          warn: (...args: any[]) => logs.push('[WARN] ' + args.map(a => String(a)).join(' ')),
-        },
-        Map,
-        Set,
-        Array,
-        Object,
-        Math,
-        Date,
-        JSON,
-        parseInt,
-        parseFloat,
-        isNaN,
-        isFinite,
-      };
-
-      try {
-        const context = vm.createContext(sandbox);
-        
-        // Driver code to evaluate test cases
-        const driverCode = `
-          ${code}
-          
-          (function() {
-            const testCases = ${JSON.stringify(testCases)};
-            const results = [];
-            for (let i = 0; i < testCases.length; i++) {
-              const tc = testCases[i];
-              const startTime = Date.now();
-              let output;
-              let error = null;
-              try {
-                // Try camelCase title-derived name first, fallback to solution
-                const func = typeof ${functionName} === 'function' ? ${functionName} : (typeof solution === 'function' ? solution : null);
-                if (!func) {
-                  throw new Error("Function '${functionName}' or 'solution' not found in workspace.");
-                }
-                output = func(...tc.input_args);
-              } catch (e) {
-                error = e.message;
-              }
-              const duration = Date.now() - startTime;
-              results.push({
-                index: i,
-                output: output !== undefined ? output : null,
-                error,
-                duration
-              });
-            }
-            return results;
-          })()
-        `;
-
-        const testResults = vm.runInContext(driverCode, context, { timeout: timeLimitMs });
-
-        // Augment each result with pass/fail and expected
-        const augmented = (testResults as any[]).map((res: any, i: number) => ({
-          ...res,
-          expected: testCases[i]?.expected_output ?? null,
-          passed: !res.error && deepEqual(res.output, testCases[i]?.expected_output)
-        }));
-
-        return NextResponse.json({
-          success: true,
-          logs,
-          results: augmented
-        });
-      } catch (err: any) {
-        return NextResponse.json({
-          success: false,
-          error: err.message || 'Execution error',
-          status: 'compile_error',
-          logs
-        });
-      }
-    }
-
-    // Default fallback/error for other languages since public Piston is restricted
+    // Default fallback/error for all languages since we run them on the Edge via Piston
     const mapped = PISTON_LANG_MAP[language];
     if (!mapped) {
       return NextResponse.json({ error: `Language ${language} execution not supported` }, { status: 400 });
@@ -227,6 +146,38 @@ for (let i = 0; i < testCases.length; i++) {
 }
 console.log("__RESULTS__:" + JSON.stringify(results));
     `;
+    } else if (language === 'javascript') {
+      payloadCode = `
+${code}
+
+(function() {
+  const testCases = ${JSON.stringify(testCases)};
+  const results = [];
+  for (let i = 0; i < testCases.length; i++) {
+    const tc = testCases[i];
+    const startTime = Date.now();
+    let output;
+    let error = null;
+    try {
+      const func = typeof ${functionName} === 'function' ? ${functionName} : (typeof solution === 'function' ? solution : null);
+      if (!func) {
+        throw new Error("Function '${functionName}' or 'solution' not found.");
+      }
+      output = func(...tc.input_args);
+    } catch (e) {
+      error = e.message;
+    }
+    const duration = Date.now() - startTime;
+    results.push({
+      index: i,
+      output: output !== undefined ? output : null,
+      error,
+      duration
+    });
+  }
+  console.log("__RESULTS__:" + JSON.stringify(results));
+})()
+`;
     } else if (language === 'python') {
       const snakeFunc = toSnakeCase(functionName);
       payloadCode = `

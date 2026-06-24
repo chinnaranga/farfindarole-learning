@@ -1,6 +1,7 @@
+export const runtime = 'edge'
+
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import vm from 'vm';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -25,6 +26,7 @@ function toPythonLiteral(value: any): string {
 
 // Map languages to Piston runner values
 const PISTON_LANG_MAP: Record<string, { language: string; version: string }> = {
+  javascript: { language: 'javascript', version: '18.15.0' },
   python: { language: 'python', version: '3.10.0' },
   typescript: { language: 'typescript', version: '5.0.3' },
   cpp: { language: 'c++', version: '10.2.0' },
@@ -172,76 +174,15 @@ export async function POST(req: Request) {
       }
     }
 
-    // 3. Execute code
-    if (language === 'javascript') {
-      const sandbox = {
-        console: {
-          log: (...args: any[]) => logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')),
-          error: (...args: any[]) => logs.push('[ERROR] ' + args.map(a => String(a)).join(' ')),
-          warn: (...args: any[]) => logs.push('[WARN] ' + args.map(a => String(a)).join(' ')),
-        },
-        Map,
-        Set,
-        Array,
-        Object,
-        Math,
-        Date,
-        JSON,
-        parseInt,
-        parseFloat,
-        isNaN,
-        isFinite,
-      };
+    // 3. Execute code via Piston API
+    const mapped = PISTON_LANG_MAP[language];
+    if (!mapped) {
+      return NextResponse.json({ error: `Language ${language} execution not supported` }, { status: 400 });
+    }
 
-      try {
-        const context = vm.createContext(sandbox);
-        const driverCode = `
-          ${code}
-          
-          (function() {
-            const testCases = ${JSON.stringify(testCases)};
-            const results = [];
-            for (let i = 0; i < testCases.length; i++) {
-              const tc = testCases[i];
-              const startTime = Date.now();
-              let output;
-              let error = null;
-              try {
-                const func = typeof ${functionName} === 'function' ? ${functionName} : (typeof solution === 'function' ? solution : null);
-                if (!func) {
-                  throw new Error("Function '${functionName}' or 'solution' not found in workspace.");
-                }
-                output = func(...tc.input_args);
-              } catch (e) {
-                error = e.message;
-              }
-              const duration = Date.now() - startTime;
-              results.push({
-                index: i,
-                output: output !== undefined ? output : null,
-                error,
-                duration
-              });
-            }
-            return results;
-          })()
-        `;
-
-        execResults = vm.runInContext(driverCode, context, { timeout: timeLimitMs });
-      } catch (err: any) {
-        executionStatus = 'compile_error';
-        compileErrorText = err.message || 'Compilation error';
-      }
-    } else {
-      // Execute via Piston API fallback for other languages (if authorized)
-      const mapped = PISTON_LANG_MAP[language];
-      if (!mapped) {
-        return NextResponse.json({ error: `Language ${language} execution not supported` }, { status: 400 });
-      }
-
-      let payloadCode = code;
-      if (language === 'typescript') {
-        payloadCode = `
+    let payloadCode = code;
+    if (language === 'typescript') {
+      payloadCode = `
 ${code}
 
 declare var console: any;
@@ -272,9 +213,41 @@ for (let i = 0; i < testCases.length; i++) {
 }
 console.log("__RESULTS__:" + JSON.stringify(results));
 `;
-      } else if (language === 'python') {
-        const snakeFunc = toSnakeCase(functionName);
-        payloadCode = `
+    } else if (language === 'javascript') {
+      payloadCode = `
+${code}
+
+(function() {
+  const testCases = ${JSON.stringify(testCases)};
+  const results = [];
+  for (let i = 0; i < testCases.length; i++) {
+    const tc = testCases[i];
+    const startTime = Date.now();
+    let output;
+    let error = null;
+    try {
+      const func = typeof ${functionName} === 'function' ? ${functionName} : (typeof solution === 'function' ? solution : null);
+      if (!func) {
+        throw new Error("Function '${functionName}' or 'solution' not found.");
+      }
+      output = func(...tc.input_args);
+    } catch (e: any) {
+      error = e.message;
+    }
+    const duration = Date.now() - startTime;
+    results.push({
+      index: i,
+      output: output !== undefined ? output : null,
+      error,
+      duration
+    });
+  }
+  console.log("__RESULTS__:" + JSON.stringify(results));
+})()
+`;
+    } else if (language === 'python') {
+      const snakeFunc = toSnakeCase(functionName);
+      payloadCode = `
 ${code}
 
 import json
@@ -304,44 +277,43 @@ for i, tc in enumerate(test_cases):
 
 print("__RESULTS__:" + json.dumps(results))
 `;
+    }
+
+    try {
+      const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          language: mapped.language,
+          version: mapped.version,
+          files: [{ content: payloadCode }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Piston error: ${response.statusText}`);
       }
 
-      try {
-        const response = await fetch('https://emkc.org/api/v2/piston/execute', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            language: mapped.language,
-            version: mapped.version,
-            files: [{ content: payloadCode }]
-          })
-        });
+      const execution = await response.json();
+      const stdout = execution.run.stdout || '';
+      const stderr = execution.run.stderr || '';
+      logs = stdout.split('\n').filter((line: string) => !line.startsWith('__RESULTS__:'));
 
-        if (!response.ok) {
-          throw new Error(`Piston error: ${response.statusText}`);
-        }
-
-        const execution = await response.json();
-        const stdout = execution.run.stdout || '';
-        const stderr = execution.run.stderr || '';
-        logs = stdout.split('\n').filter((line: string) => !line.startsWith('__RESULTS__:'));
-
-        if (stderr) {
-          executionStatus = 'runtime_error';
-          compileErrorText = stderr;
-        } else {
-          const resultLine = stdout.split('\n').find((line: string) => line.startsWith('__RESULTS__:'));
-          if (!resultLine) {
-            executionStatus = 'failed';
-            compileErrorText = 'Execution finished but failed to retrieve results wrapper.';
-          } else {
-            execResults = JSON.parse(resultLine.replace('__RESULTS__:', ''));
-          }
-        }
-      } catch (err: any) {
+      if (stderr) {
         executionStatus = 'runtime_error';
-        compileErrorText = `Piston execution failed. Please verify your connection or try again later.`;
+        compileErrorText = stderr;
+      } else {
+        const resultLine = stdout.split('\n').find((line: string) => line.startsWith('__RESULTS__:'));
+        if (!resultLine) {
+          executionStatus = 'failed';
+          compileErrorText = 'Execution finished but failed to retrieve results wrapper.';
+        } else {
+          execResults = JSON.parse(resultLine.replace('__RESULTS__:', ''));
+        }
       }
+    } catch (err: any) {
+      executionStatus = 'runtime_error';
+      compileErrorText = `Piston execution failed. Please verify your connection or try again later.`;
     }
 
     // 4. Verify outputs against expectations

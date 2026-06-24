@@ -1,3 +1,5 @@
+export const runtime = 'edge'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { updateCourseProgress } from '@/lib/server-store'
 import { supabase } from '@/lib/supabase'
