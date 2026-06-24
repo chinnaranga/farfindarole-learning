@@ -1,3 +1,4 @@
+// Trigger Cloudflare Pages automatic deployment sync
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
