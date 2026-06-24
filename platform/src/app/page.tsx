@@ -1,4 +1,5 @@
 export const runtime = 'edge';
+export const runtime = 'edge';
 
 import { getCourses } from '@/lib/supabase'
 import Link from 'next/link'
