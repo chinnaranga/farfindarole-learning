@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { NextRequest, NextResponse } from 'next/server'
 import { getPromptHistory, savePromptHistory, deletePromptHistory, toggleFavoritePrompt } from '@/lib/server-store'
 

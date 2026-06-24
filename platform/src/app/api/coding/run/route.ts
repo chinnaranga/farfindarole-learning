@@ -1,9 +1,6 @@
-export const runtime = 'edge'
-
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import vm from 'vm';
-import { exec } from 'child_process';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -50,30 +47,7 @@ function deepEqual(val1: any, val2: any): boolean {
   try { return JSON.stringify(val1) === JSON.stringify(val2); } catch { return false; }
 }
 
-function runPythonLocally(payloadCode: string, timeLimitMs: number): Promise<{ stdout: string; stderr: string; error?: string }> {
-  return new Promise((resolve) => {
-    const processInstance = exec('python3', { timeout: timeLimitMs }, (error, stdout, stderr) => {
-      if (error) {
-        resolve({
-          stdout: stdout || '',
-          stderr: stderr || '',
-          error: error.killed ? 'Time Limit Exceeded' : (error.message || 'Execution error')
-        });
-      } else {
-        resolve({
-          stdout: stdout || '',
-          stderr: stderr || ''
-        });
-      }
-    });
-
-    if (processInstance.stdin) {
-      processInstance.stdin.write(payloadCode);
-      processInstance.stdin.end();
-    }
-  });
-}
-
+// Local Python runner removed in favor of secure, Edge-compatible remote Piston execution
 
 // Map languages to Piston runner values
 const PISTON_LANG_MAP: Record<string, { language: string; version: string }> = {
@@ -214,94 +188,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // 3. Execute other languages
-    if (language === 'python') {
-      const snakeFunc = toSnakeCase(functionName);
-      const payloadCode = `
-${code}
-
-import json
-import time
-
-test_cases = ${toPythonLiteral(testCases)}
-results = []
-for i, tc in enumerate(test_cases):
-    start_time = time.time()
-    output = None
-    error = None
-    try:
-        func = globals().get('${functionName}') or globals().get('${snakeFunc}') or globals().get('solution')
-        if func:
-            output = func(*tc['input_args'])
-        else:
-            raise Exception("Function '${functionName}', '${snakeFunc}', or 'solution' not found.")
-    except Exception as e:
-        error = str(e)
-    duration = int((time.time() - start_time) * 1000)
-    results.append({
-        "index": i,
-        "output": output,
-        "error": error,
-        "duration": duration
-    })
-
-print("__RESULTS__:" + json.dumps(results))
-`;
-
-      try {
-        const { stdout, stderr, error } = await runPythonLocally(payloadCode, timeLimitMs);
-        const outputLogs = stdout.split('\n').filter((line: string) => !line.startsWith('__RESULTS__:'));
-
-        if (error) {
-          return NextResponse.json({
-            success: false,
-            error: error === 'Time Limit Exceeded' ? 'Time Limit Exceeded' : (stderr || error),
-            status: error === 'Time Limit Exceeded' ? 'time_limit_exceeded' : 'runtime_error',
-            logs: outputLogs
-          });
-        }
-
-        if (stderr) {
-          return NextResponse.json({
-            success: false,
-            error: stderr,
-            status: 'runtime_error',
-            logs: outputLogs
-          });
-        }
-
-        const resultLine = stdout.split('\n').find((line: string) => line.startsWith('__RESULTS__:'));
-        if (!resultLine) {
-          return NextResponse.json({
-            success: false,
-            error: 'Execution completed but results tag was not found. Make sure your function is named properly.',
-            logs: outputLogs
-          });
-        }
-
-        const resultsJson = JSON.parse(resultLine.replace('__RESULTS__:', ''));
-
-        const augmented = resultsJson.map((res: any, i: number) => ({
-          ...res,
-          expected: testCases[i]?.expected_output ?? null,
-          passed: !res.error && deepEqual(res.output, testCases[i]?.expected_output)
-        }));
-
-        return NextResponse.json({
-          success: true,
-          logs: outputLogs,
-          results: augmented
-        });
-      } catch (err: any) {
-        return NextResponse.json({
-          success: false,
-          error: err.message || 'Python execution error',
-          status: 'runtime_error',
-          logs: []
-        });
-      }
-    }
-
     // Default fallback/error for other languages since public Piston is restricted
     const mapped = PISTON_LANG_MAP[language];
     if (!mapped) {
@@ -341,6 +227,38 @@ for (let i = 0; i < testCases.length; i++) {
 }
 console.log("__RESULTS__:" + JSON.stringify(results));
     `;
+    } else if (language === 'python') {
+      const snakeFunc = toSnakeCase(functionName);
+      payloadCode = `
+${code}
+
+import json
+import time
+
+test_cases = ${toPythonLiteral(testCases)}
+results = []
+for i, tc in enumerate(test_cases):
+    start_time = time.time()
+    output = None
+    error = None
+    try:
+        func = globals().get('${functionName}') or globals().get('${snakeFunc}') or globals().get('solution')
+        if func:
+            output = func(*tc['input_args'])
+        else:
+            raise Exception("Function '${functionName}', '${snakeFunc}', or 'solution' not found.")
+    except Exception as e:
+        error = str(e)
+    duration = int((time.time() - start_time) * 1000)
+    results.append({
+        "index": i,
+        "output": output,
+        "error": error,
+        "duration": duration
+    })
+
+print("__RESULTS__:" + json.dumps(results))
+`;
     }
 
     try {
@@ -390,16 +308,23 @@ console.log("__RESULTS__:" + JSON.stringify(results));
 
       const resultsJson = JSON.parse(resultLine.replace('__RESULTS__:', ''));
 
+      // Augment Piston execution results with pass/fail and expected values
+      const augmented = resultsJson.map((res: any, i: number) => ({
+        ...res,
+        expected: testCases[i]?.expected_output ?? null,
+        passed: !res.error && deepEqual(res.output, testCases[i]?.expected_output)
+      }));
+
       return NextResponse.json({
         success: true,
         logs: outputLogs,
-        results: resultsJson
+        results: augmented
       });
     } catch (err: any) {
       console.error('Piston Execution Error:', err);
       return NextResponse.json({
         success: false,
-        error: `Piston execution failed (401 Unauthorized/unsupported). Please use Javascript or Python for local runtime.`,
+        error: `Piston execution failed. Please verify your connection or try again later.`,
         status: 'runtime_error',
         logs: [err.message]
       });

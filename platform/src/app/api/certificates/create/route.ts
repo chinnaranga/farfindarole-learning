@@ -1,5 +1,3 @@
-export const runtime = 'edge'
-
 import { NextRequest, NextResponse } from 'next/server'
 import { saveCertificate } from '@/lib/server-store'
 import { supabase } from '@/lib/supabase'

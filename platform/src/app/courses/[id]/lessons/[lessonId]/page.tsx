@@ -1,7 +1,5 @@
 'use client'
 
-export const runtime = 'edge'
-
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
@@ -1337,7 +1335,6 @@ Provide a helpful, concise explanation of 2-3 sentences explaining the concepts 
                     </div>
                   </div>
 
-
                 </div>
               )}
 
@@ -2109,7 +2106,6 @@ Provide a helpful, concise explanation of 2-3 sentences explaining the concepts 
         )}
 
       </div>
-
 
       {/* ── Completion Celebration ──────────────────────────────────────────── */}
 

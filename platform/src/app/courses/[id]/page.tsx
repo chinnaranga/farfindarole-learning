@@ -1,7 +1,5 @@
 'use client'
 
-export const runtime = 'edge'
-
 import { useState, useEffect } from 'react'
 import { getCourse, getLessons, getProgressDetails, supabase, getUserSubscription } from '@/lib/supabase'
 import Link from 'next/link'
@@ -37,7 +35,6 @@ import {
   Lightbulb,
   X
 } from 'lucide-react'
-
 
 export default function CourseDetailPage() {
   const params = useParams()

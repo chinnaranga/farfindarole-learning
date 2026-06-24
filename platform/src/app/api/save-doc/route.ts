@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'edge'
-
 // Since this is a local-only utility for writing to the local workspace disk,
 // we mock it out on the Edge Runtime (production/Cloudflare) to prevent compilation
 // and security issues in the serverless environment.

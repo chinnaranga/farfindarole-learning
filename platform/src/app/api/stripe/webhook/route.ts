@@ -10,8 +10,6 @@ import {
 } from '@/lib/email-templates'
 import { generateInvoicePDF } from '@/lib/pdf-generator'
 
-export const runtime = 'edge'
-
 // Initialize Stripe client lazily to prevent module load crashes when key is temporarily missing
 let stripeInstance: Stripe | null = null
 function getStripe() {

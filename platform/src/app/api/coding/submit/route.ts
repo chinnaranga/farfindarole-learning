@@ -1,9 +1,6 @@
-export const runtime = 'edge'
-
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import vm from 'vm';
-import { exec } from 'child_process';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -24,30 +21,7 @@ function toPythonLiteral(value: any): string {
     .replace(/\bnull\b/g, 'None');
 }
 
-function runPythonLocally(payloadCode: string, timeLimitMs: number): Promise<{ stdout: string; stderr: string; error?: string }> {
-  return new Promise((resolve) => {
-    const processInstance = exec('python3', { timeout: timeLimitMs }, (error, stdout, stderr) => {
-      if (error) {
-        resolve({
-          stdout: stdout || '',
-          stderr: stderr || '',
-          error: error.killed ? 'Time Limit Exceeded' : (error.message || 'Execution error')
-        });
-      } else {
-        resolve({
-          stdout: stdout || '',
-          stderr: stderr || ''
-        });
-      }
-    });
-
-    if (processInstance.stdin) {
-      processInstance.stdin.write(payloadCode);
-      processInstance.stdin.end();
-    }
-  });
-}
-
+// Local Python runner removed in favor of secure, Edge-compatible remote Piston execution
 
 // Map languages to Piston runner values
 const PISTON_LANG_MAP: Record<string, { language: string; version: string }> = {
@@ -258,62 +232,6 @@ export async function POST(req: Request) {
         executionStatus = 'compile_error';
         compileErrorText = err.message || 'Compilation error';
       }
-    } else if (language === 'python') {
-      const snakeFunc = toSnakeCase(functionName);
-      const payloadCode = `
-${code}
-
-import json
-import time
-
-test_cases = ${toPythonLiteral(testCases)}
-results = []
-for i, tc in enumerate(test_cases):
-    start_time = time.time()
-    output = None
-    error = None
-    try:
-        func = globals().get('${functionName}') or globals().get('${snakeFunc}') or globals().get('solution')
-        if func:
-            output = func(*tc['input_args'])
-        else:
-            raise Exception("Function '${functionName}', '${snakeFunc}', or 'solution' not found.")
-    except Exception as e:
-        error = str(e)
-    duration = int((time.time() - start_time) * 1000)
-    results.append({
-        "index": i,
-        "output": output,
-        "error": error,
-        "duration": duration
-    })
-
-print("__RESULTS__:" + json.dumps(results))
-`;
-
-      try {
-        const { stdout, stderr, error } = await runPythonLocally(payloadCode, timeLimitMs);
-        logs = stdout.split('\n').filter((line: string) => !line.startsWith('__RESULTS__:'));
-
-        if (error) {
-          executionStatus = error === 'Time Limit Exceeded' ? 'time_limit_exceeded' : 'runtime_error';
-          compileErrorText = error === 'Time Limit Exceeded' ? 'Time Limit Exceeded' : (stderr || error);
-        } else if (stderr) {
-          executionStatus = 'runtime_error';
-          compileErrorText = stderr;
-        } else {
-          const resultLine = stdout.split('\n').find((line: string) => line.startsWith('__RESULTS__:'));
-          if (!resultLine) {
-            executionStatus = 'failed';
-            compileErrorText = 'Execution finished but failed to retrieve results wrapper.';
-          } else {
-            execResults = JSON.parse(resultLine.replace('__RESULTS__:', ''));
-          }
-        }
-      } catch (err: any) {
-        executionStatus = 'runtime_error';
-        compileErrorText = err.message || 'Python execution error';
-      }
     } else {
       // Execute via Piston API fallback for other languages (if authorized)
       const mapped = PISTON_LANG_MAP[language];
@@ -354,6 +272,38 @@ for (let i = 0; i < testCases.length; i++) {
 }
 console.log("__RESULTS__:" + JSON.stringify(results));
 `;
+      } else if (language === 'python') {
+        const snakeFunc = toSnakeCase(functionName);
+        payloadCode = `
+${code}
+
+import json
+import time
+
+test_cases = ${toPythonLiteral(testCases)}
+results = []
+for i, tc in enumerate(test_cases):
+    start_time = time.time()
+    output = None
+    error = None
+    try:
+        func = globals().get('${functionName}') or globals().get('${snakeFunc}') or globals().get('solution')
+        if func:
+            output = func(*tc['input_args'])
+        else:
+            raise Exception("Function '${functionName}', '${snakeFunc}', or 'solution' not found.")
+    except Exception as e:
+        error = str(e)
+    duration = int((time.time() - start_time) * 1000)
+    results.append({
+        "index": i,
+        "output": output,
+        "error": error,
+        "duration": duration
+    })
+
+print("__RESULTS__:" + json.dumps(results))
+`;
       }
 
       try {
@@ -390,7 +340,7 @@ console.log("__RESULTS__:" + JSON.stringify(results));
         }
       } catch (err: any) {
         executionStatus = 'runtime_error';
-        compileErrorText = `Piston execution failed (401 Unauthorized/unsupported). Please use Javascript or Python for local runtime.`;
+        compileErrorText = `Piston execution failed. Please verify your connection or try again later.`;
       }
     }
 

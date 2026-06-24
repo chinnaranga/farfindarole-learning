@@ -4,8 +4,6 @@ import { generateCertificatePDF } from '@/lib/pdf-generator';
 import { sendEmail } from '@/lib/email';
 import { getCertificateEmail } from '@/lib/email-templates';
 
-export const runtime = 'edge';
-
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -254,7 +252,7 @@ export async function GET(request: NextRequest) {
     const downloadFileName = `FarFindARole_Certificate_${safeTitle}.pdf`;
 
     // 7. Return binary response for instant file download
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(new Uint8Array(fileBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${downloadFileName}"`,
