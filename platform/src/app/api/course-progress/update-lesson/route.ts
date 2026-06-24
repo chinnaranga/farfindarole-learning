@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server'
 import { updateLessonProgress } from '@/lib/server-store'
 import { supabase } from '@/lib/supabase'
@@ -72,24 +74,4 @@ export async function POST(request: NextRequest) {
           }
 
           // ── PROGRESS MILESTONE EMAILS ──
-          // Send progress milestones at 25%, 50%, and 75%
-          const checkMilestone = (milestone: number, label: number) => {
-            if (previousPercentage < milestone && newPercentage >= milestone && newPercentage < 1.0) {
-              triggerMilestoneEmail(userId, courseId, label).catch(err => {
-                console.error(`[EMAIL-TRIGGER] Failed to trigger ${label}% progress email:`, err)
-              })
-            }
-          }
-
-          checkMilestone(0.25, 25)
-          checkMilestone(0.50, 50)
-          checkMilestone(0.75, 75)
-        }
-      }
-    }
-
-    return NextResponse.json({ success: true, data })
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
-  }
-}
+          // Send progress milestones at 25

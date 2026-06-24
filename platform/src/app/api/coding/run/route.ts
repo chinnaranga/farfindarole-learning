@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import vm from 'vm';
@@ -17,9 +19,9 @@ function toSnakeCase(str: string) {
  */
 function toPythonLiteral(value: any): string {
   return JSON.stringify(value)
-    .replace(/\btrue\b/g, 'True')
-    .replace(/\bfalse\b/g, 'False')
-    .replace(/\bnull\b/g, 'None');
+    .replace(/true/g, 'True')
+    .replace(/false/g, 'False')
+    .replace(/null/g, 'None');
 }
 
 // Deep equal comparison (mirrors submit route logic)
@@ -248,7 +250,8 @@ print("__RESULTS__:" + json.dumps(results))
 
       try {
         const { stdout, stderr, error } = await runPythonLocally(payloadCode, timeLimitMs);
-        const outputLogs = stdout.split('\n').filter((line: string) => !line.startsWith('__RESULTS__:'));
+        const outputLogs = stdout.split('
+').filter((line: string) => !line.startsWith('__RESULTS__:'));
 
         if (error) {
           return NextResponse.json({
@@ -268,7 +271,8 @@ print("__RESULTS__:" + json.dumps(results))
           });
         }
 
-        const resultLine = stdout.split('\n').find((line: string) => line.startsWith('__RESULTS__:'));
+        const resultLine = stdout.split('
+').find((line: string) => line.startsWith('__RESULTS__:'));
         if (!resultLine) {
           return NextResponse.json({
             success: false,
@@ -365,7 +369,8 @@ console.log("__RESULTS__:" + JSON.stringify(results));
       const execution = await response.json();
       const stdout = execution.run.stdout || '';
       const stderr = execution.run.stderr || '';
-      const outputLogs = stdout.split('\n').filter((line: string) => !line.startsWith('__RESULTS__:'));
+      const outputLogs = stdout.split('
+').filter((line: string) => !line.startsWith('__RESULTS__:'));
 
       if (stderr) {
         return NextResponse.json({
@@ -377,7 +382,8 @@ console.log("__RESULTS__:" + JSON.stringify(results));
       }
 
       // Try to find the __RESULTS__ tag in stdout
-      const resultLine = stdout.split('\n').find((line: string) => line.startsWith('__RESULTS__:'));
+      const resultLine = stdout.split('
+').find((line: string) => line.startsWith('__RESULTS__:'));
       if (!resultLine) {
         return NextResponse.json({
           success: false,

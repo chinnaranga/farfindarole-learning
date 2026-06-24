@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
@@ -120,7 +122,8 @@ export async function GET(req: NextRequest) {
       })
 
       // Add summary details at the bottom of the CSV
-      csvLines.push('\n')
+      csvLines.push('
+')
       csvLines.push('SUMMARY,')
       csvLines.push(`Total Transactions,${summary.invoiceCount}`)
       csvLines.push(`Total Net Sales,${summary.totalSales.toFixed(2)}`)
@@ -128,7 +131,8 @@ export async function GET(req: NextRequest) {
       csvLines.push(`GST Collected,${summary.taxBreakdown.GST.toFixed(2)}`)
       csvLines.push(`VAT Collected,${summary.taxBreakdown.VAT.toFixed(2)}`)
 
-      const csvContent = csvLines.join('\n')
+      const csvContent = csvLines.join('
+')
       return new Response(csvContent, {
         headers: {
           'Content-Type': 'text/csv',

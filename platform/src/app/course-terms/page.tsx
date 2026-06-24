@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 'use client'
 
 import Link from 'next/link'
@@ -45,7 +47,7 @@ export default function CourseTermsPage() {
             <CheckCircle className="w-4 h-4 text-red-650" /> TL;DR — Summary of Course Terms
           </h2>
           <p className="text-xs text-red-950/80 leading-relaxed font-semibold">
-            All course content is copyrighted. Sharing premium lessons is prohibited. Verification certificates are issued only on 100% completion of lessons and quizzes. Plagiarism or cheat codes will result in access revocation.
+            All course content is copyrighted. Sharing premium lessons is prohibited. Verification certificates are issued only on 100ompletion of lessons and quizzes. Plagiarism or cheat codes will result in access revocation.
           </p>
         </div>
 
@@ -91,7 +93,7 @@ export default function CourseTermsPage() {
               To complete a course path, you must:
               <br />&bull; Visit and fully scroll each lesson content page.
               <br />&bull; Attain passing marks on all lesson checks.
-              <br />&bull; Complete all lesson quizzes with a 100% submission rating.
+              <br />&bull; Complete all lesson quizzes with a 100ubmission rating.
             </p>
           </div>
 

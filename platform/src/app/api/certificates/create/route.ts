@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server'
 import { saveCertificate } from '@/lib/server-store'
 import { supabase } from '@/lib/supabase'
@@ -34,18 +36,4 @@ export async function POST(request: NextRequest) {
         .select('id')
         .eq('recipient', userId.toLowerCase())
         .eq('email_type', 'certificate')
-        .ilike('subject', `%certificate for ${course.title}%`)
-        .maybeSingle()
-
-      if (!existingLog) {
-        triggerCertificateEmails(userId, courseId, certificateUrl).catch(err => {
-          console.error('[EMAIL-TRIGGER] Failed to trigger certificate emails:', err)
-        })
-      }
-    }
-
-    return NextResponse.json({ success: true })
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
-  }
-}
+        .ilike('subject', `ertificate for ${course.title}

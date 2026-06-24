@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { getUserRole } from '@/lib/server-store'
@@ -57,51 +59,4 @@ export async function GET(request: NextRequest) {
         .select('id')
         .eq('recipient', recipientEmail)
         .eq('email_type', 'reminder')
-        .ilike('subject', `%${course.title}%`)
-        .gt('sent_at', thresholdStr)
-        .maybeSingle()
-
-      if (recentLog) {
-        results.push(`Skipped ${recipientEmail} for ${course.title} (already reminded recently)`)
-        continue
-      }
-
-      // Fetch user profile name
-      const userDetails = getUserRole(recipientEmail)
-      const userName = userDetails?.name || recipientEmail.split('@')[0]
-      const lastAccessedTime = new Date(enrollment.last_accessed).getTime()
-      const daysInactive = Math.max(3, Math.floor((Date.now() - lastAccessedTime) / (1000 * 60 * 60 * 24)))
-
-      // Send the email
-      const html = getReminderEmail({
-        userName,
-        courseTitle: course.title,
-        daysInactive
-      })
-
-      const sendResult = await sendEmail({
-        to: recipientEmail,
-        subject: `Don't lose your streak in ${course.title}!`,
-        html,
-        emailType: 'reminder'
-      })
-
-      if (sendResult.success) {
-        emailsSent++
-        results.push(`Sent reminder to ${recipientEmail} for ${course.title}`)
-      } else {
-        results.push(`Failed sending reminder to ${recipientEmail} for ${course.title}: ${sendResult.error}`)
-      }
-    }
-
-    return NextResponse.json({
-      success: true,
-      processed: inactiveEnrollments.length,
-      sent: emailsSent,
-      log: results
-    })
-  } catch (error: any) {
-    console.error('[CRON-REMINDERS] Cron error:', error)
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
-  }
-}
+        .ilike('subject', `

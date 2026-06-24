@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -585,22 +587,4 @@ export default function AdminBillingPage() {
                         </div>
                         <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden">
                           <div 
-                            style={{ width: `${percent}%` }}
-                            className="bg-gradient-to-r from-red-600 to-indigo-600 h-full rounded-full" 
-                          />
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-    </div>
-  )
-}
+                            style={{ width: `${percent}

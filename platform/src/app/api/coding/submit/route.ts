@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import vm from 'vm';
@@ -17,9 +19,9 @@ function toSnakeCase(str: string) {
  */
 function toPythonLiteral(value: any): string {
   return JSON.stringify(value)
-    .replace(/\btrue\b/g, 'True')
-    .replace(/\bfalse\b/g, 'False')
-    .replace(/\bnull\b/g, 'None');
+    .replace(/true/g, 'True')
+    .replace(/false/g, 'False')
+    .replace(/null/g, 'None');
 }
 
 function runPythonLocally(payloadCode: string, timeLimitMs: number): Promise<{ stdout: string; stderr: string; error?: string }> {
@@ -291,7 +293,8 @@ print("__RESULTS__:" + json.dumps(results))
 
       try {
         const { stdout, stderr, error } = await runPythonLocally(payloadCode, timeLimitMs);
-        logs = stdout.split('\n').filter((line: string) => !line.startsWith('__RESULTS__:'));
+        logs = stdout.split('
+').filter((line: string) => !line.startsWith('__RESULTS__:'));
 
         if (error) {
           executionStatus = error === 'Time Limit Exceeded' ? 'time_limit_exceeded' : 'runtime_error';
@@ -300,7 +303,8 @@ print("__RESULTS__:" + json.dumps(results))
           executionStatus = 'runtime_error';
           compileErrorText = stderr;
         } else {
-          const resultLine = stdout.split('\n').find((line: string) => line.startsWith('__RESULTS__:'));
+          const resultLine = stdout.split('
+').find((line: string) => line.startsWith('__RESULTS__:'));
           if (!resultLine) {
             executionStatus = 'failed';
             compileErrorText = 'Execution finished but failed to retrieve results wrapper.';
@@ -372,13 +376,15 @@ console.log("__RESULTS__:" + JSON.stringify(results));
         const execution = await response.json();
         const stdout = execution.run.stdout || '';
         const stderr = execution.run.stderr || '';
-        logs = stdout.split('\n').filter((line: string) => !line.startsWith('__RESULTS__:'));
+        logs = stdout.split('
+').filter((line: string) => !line.startsWith('__RESULTS__:'));
 
         if (stderr) {
           executionStatus = 'runtime_error';
           compileErrorText = stderr;
         } else {
-          const resultLine = stdout.split('\n').find((line: string) => line.startsWith('__RESULTS__:'));
+          const resultLine = stdout.split('
+').find((line: string) => line.startsWith('__RESULTS__:'));
           if (!resultLine) {
             executionStatus = 'failed';
             compileErrorText = 'Execution finished but failed to retrieve results wrapper.';
@@ -414,145 +420,9 @@ console.log("__RESULTS__:" + JSON.stringify(results));
 
       executionStatus = passedCases === totalCases ? 'accepted' : 'failed';
       if (!compileErrorText && caseErrors.length > 0) {
-        compileErrorText = caseErrors.join('\n');
+        compileErrorText = caseErrors.join('
+');
       }
     }
 
-    // Flag plagiarism if similarity > 75%
-    if (highestPlagScore > 0.75) {
-      executionStatus = 'plagiarized';
-    }
-
-    // 5. Save submission to database
-    const { error: subErr } = await supabase
-      .from('challenge_submissions')
-      .insert({
-        challenge_id: challengeId,
-        user_id: userId,
-        language,
-        submitted_code: code,
-        status: executionStatus,
-        passed_cases: passedCases,
-        total_cases: totalCases,
-        runtime_ms: runtimeMs,
-        plagiarism_score: highestPlagScore * 100,
-        ai_feedback: executionStatus === 'accepted' ? 'Great job! Clean solution.' : (compileErrorText || 'Failed test cases.')
-      });
-
-    if (subErr) {
-      console.error('Failed to log submission:', subErr);
-    }
-
-    // 6. Update user stats & streak if solution accepted and not plagiarized
-    let statsUpdated = false;
-    let earnedBadges: string[] = [];
-
-    if (executionStatus === 'accepted') {
-      // Fetch or create user coding stats
-      const { data: currentStats, error: statsFetchErr } = await supabase
-        .from('user_coding_stats')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      const todayStr = new Date().toISOString().split('T')[0];
-      let streak = currentStats?.streak_days ?? 0;
-      let solved = currentStats?.problems_solved ?? 0;
-      let xp = currentStats?.xp_points ?? 0;
-      let langMap = currentStats?.languages_used ?? {};
-      let diffMap = currentStats?.difficulty_solved ?? { easy: 0, medium: 0, hard: 0, project: 0 };
-
-      // Update languages count
-      langMap[language] = (langMap[language] || 0) + 1;
-      
-      // Update difficulty count
-      diffMap[challengeDifficulty] = (diffMap[challengeDifficulty] || 0) + 1;
-
-      // Handle coding streak
-      if (currentStats) {
-        const lastSubmitDate = currentStats.last_submit_date;
-        if (lastSubmitDate) {
-          const lastDate = new Date(lastSubmitDate);
-          const today = new Date(todayStr);
-          const diffTime = Math.abs(today.getTime() - lastDate.getTime());
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          
-          if (diffDays === 1) {
-            streak += 1;
-          } else if (diffDays > 1) {
-            streak = 1;
-          }
-          // if diffDays === 0, keep same streak (already submitted today)
-        } else {
-          streak = 1;
-        }
-        solved += 1;
-        xp += pointsAwarded;
-      } else {
-        streak = 1;
-        solved = 1;
-        xp = pointsAwarded;
-      }
-
-      // Upsert stats
-      const { error: upsertErr } = await supabase
-        .from('user_coding_stats')
-        .upsert({
-          user_id: userId,
-          problems_solved: solved,
-          streak_days: streak,
-          xp_points: xp,
-          languages_used: langMap,
-          difficulty_solved: diffMap,
-          last_submit_date: todayStr
-        });
-
-      if (!upsertErr) {
-        statsUpdated = true;
-
-        // Check and award badges
-        const awardsToCheck = [
-          { id: 'first_solve', threshold: 1, type: 'solve' },
-          { id: 'solve_10', threshold: 10, type: 'solve' },
-          { id: 'polyglot', threshold: 3, type: 'languages' }
-        ];
-
-        for (const award of awardsToCheck) {
-          let shouldAward = false;
-          if (award.type === 'solve' && solved >= award.threshold) {
-            shouldAward = true;
-          } else if (award.type === 'languages' && Object.keys(langMap).length >= award.threshold) {
-            shouldAward = true;
-          }
-
-          if (shouldAward) {
-            const { error: badgeErr } = await supabase
-              .from('user_badges')
-              .insert({
-                user_id: userId,
-                badge_id: award.id
-              });
-            
-            if (!badgeErr) {
-              earnedBadges.push(award.id);
-            }
-          }
-        }
-      }
-    }
-
-    return NextResponse.json({
-      success: true,
-      status: executionStatus,
-      passedCases,
-      totalCases,
-      runtimeMs,
-      plagiarismScore: highestPlagScore * 100,
-      compileError: compileErrorText,
-      earnedBadges,
-      statsUpdated
-    });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 });
-  }
-}
+    // Flag plagiarism if similarity > 75

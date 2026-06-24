@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -230,51 +232,4 @@ export default function ResetPasswordPage() {
 
                     <div className="flex items-center gap-1.5 col-span-2">
                       <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 text-[8px] font-bold ${hasSpecial ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>✓</div>
-                      <span className={hasSpecial ? 'text-slate-700 font-bold' : ''}>1 Special Symbol (!@#$%^&*)</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Confirm Password */}
-              <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Confirm Password</label>
-                <div className="relative">
-                  <input
-                    type="password"
-                    disabled={loading}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 pl-11 text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-red-600 focus:bg-white transition"
-                    required
-                  />
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-4 top-3.5" />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading || !isPasswordValid}
-                className="w-full bg-slate-900 hover:bg-slate-950 text-white text-xs font-black py-3.5 rounded-xl uppercase tracking-widest transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-              >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Update Password'}
-              </button>
-            </form>
-          )}
-
-        </div>
-
-        {/* Footer info */}
-        <div className="relative z-10 text-[10px] text-slate-450 flex justify-between px-4">
-          <span>© 2026 FarFindARole. All rights reserved.</span>
-          <div className="flex gap-4 font-bold uppercase tracking-wider">
-            <Link href="/privacy" className="hover:text-slate-800 transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-slate-800 transition-colors">Terms</Link>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  )
-}
+                      <span className={hasSpecial ? 'text-slate-700 font-bold' : ''}>1 Special Symbol (!@#$
