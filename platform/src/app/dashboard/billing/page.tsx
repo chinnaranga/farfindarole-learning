@@ -146,20 +146,20 @@ export default function UserBillingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col items-center justify-center">
         <Loader2 className="w-12 h-12 text-red-600 animate-spin mb-4" />
-        <p className="text-slate-400 font-medium">Synchronizing billing records...</p>
+        <p className="text-slate-500 font-medium">Synchronizing billing records...</p>
       </div>
     )
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col items-center justify-center p-6 text-center">
         <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
         <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-        <p className="text-slate-400 max-w-md mb-6">You must be logged in to view your billing details and invoices.</p>
-        <Link href="/login" className="px-6 py-3 bg-red-600 hover:bg-red-700 font-bold rounded-xl transition duration-200">
+        <p className="text-slate-600 max-w-md mb-6">You must be logged in to view your billing details and invoices.</p>
+        <Link href="/login" className="px-6 py-3 bg-red-600 hover:bg-red-700 font-bold text-white rounded-xl transition duration-200">
           Go to Login
         </Link>
       </div>
@@ -174,31 +174,31 @@ export default function UserBillingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* Background radial effects */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-6xl mx-auto px-6 py-8 relative z-10">
         
         {/* Header Breadcrumbs */}
         <div className="mb-8">
-          <Link href="/dashboard" className="inline-flex items-center gap-2 text-slate-400 hover:text-white font-medium transition duration-150">
+          <Link href="/dashboard" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 font-medium transition duration-150">
             <ArrowLeft className="w-4 h-4" /> Back to Workspace
           </Link>
         </div>
 
         {/* Brand Banner */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 pb-6 border-b border-slate-800">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 pb-6 border-b border-slate-200">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
               Billing & Graduate Credentials
             </h1>
-            <p className="text-slate-400 mt-1">Manage subscriptions, download verifiable invoices, and access your graduation certificates.</p>
+            <p className="text-slate-600 mt-1">Manage subscriptions, download verifiable invoices, and access your graduation certificates.</p>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-2xl">
+          <div className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-2xl shadow-sm">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-semibold text-slate-300">{user.email}</span>
+            <span className="text-xs font-semibold text-slate-700">{user.email}</span>
           </div>
         </div>
 
@@ -208,51 +208,51 @@ export default function UserBillingPage() {
           <div className="lg:col-span-2 space-y-8">
             
             {/* Active Subscription Summary */}
-            <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800 rounded-3xl p-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-red-600/20 to-transparent rounded-bl-3xl" />
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 relative overflow-hidden shadow-sm">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-red-500/5 to-transparent rounded-bl-3xl" />
               
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-red-600/10 border border-red-500/20 flex items-center justify-center text-red-500">
+                <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-600">
                   <CreditCard className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold">Active Membership Plan</h2>
-                  <p className="text-xs text-slate-400">Subscription Status & Plan Details</p>
+                  <h2 className="text-lg font-bold text-slate-900">Active Membership Plan</h2>
+                  <p className="text-xs text-slate-500">Subscription Status & Plan Details</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl">
-                  <span className="text-xs text-slate-400 block mb-1">CURRENT TIER</span>
-                  <span className="text-xl font-extrabold text-white">
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                  <span className="text-xs text-slate-500 block mb-1 font-semibold uppercase tracking-wider">CURRENT TIER</span>
+                  <span className="text-xl font-extrabold text-slate-900">
                     {subscription ? displayPlanNames[subscription.plan] || subscription.plan.toUpperCase() : 'Free Tier'}
                   </span>
                   {subscription?.status === 'active' && (
-                    <span className="inline-flex items-center ml-2 px-2.5 py-0.5 rounded-full text-2xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span className="inline-flex items-center ml-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
                       ACTIVE
                     </span>
                   )}
                 </div>
 
-                <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl">
-                  <span className="text-xs text-slate-400 block mb-1">RENEWAL / EXPIRY DATE</span>
-                  <span className="text-lg font-bold text-slate-200">
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                  <span className="text-xs text-slate-500 block mb-1 font-semibold uppercase tracking-wider">RENEWAL / EXPIRY DATE</span>
+                  <span className="text-lg font-bold text-slate-800">
                     {subscription?.current_period_end 
                       ? new Date(subscription.current_period_end).toLocaleDateString()
                       : 'Lifetime Access (Free)'}
                   </span>
-                  <span className="text-2xs text-slate-500 block mt-1">
+                  <span className="text-[10px] text-slate-500 block mt-1">
                     {subscription?.billing_period === 'annually' ? 'Billed annually' : subscription ? 'Billed monthly' : 'No recurring payments'}
                   </span>
                 </div>
               </div>
 
               {subscription && subscription.plan !== 'free' && (
-                <div className="mt-6 flex flex-wrap gap-4 items-center justify-between pt-4 border-t border-slate-800">
-                  <p className="text-xs text-slate-400 flex items-center gap-1">
-                    <HelpCircle className="w-4 h-4 text-slate-500" /> Billed via Stripe secure processing. Card details are never stored here.
+                <div className="mt-6 flex flex-wrap gap-4 items-center justify-between pt-4 border-t border-slate-200">
+                  <p className="text-xs text-slate-500 flex items-center gap-1">
+                    <HelpCircle className="w-4 h-4 text-slate-400" /> Billed via Stripe secure processing. Card details are never stored here.
                   </p>
-                  <Link href="/pricing" className="text-sm font-bold text-red-500 hover:text-red-400 flex items-center gap-1 transition">
+                  <Link href="/pricing" className="text-sm font-bold text-red-600 hover:text-red-700 flex items-center gap-1 transition">
                     Modify Plan <ChevronRight className="w-4 h-4" />
                   </Link>
                 </div>
@@ -260,27 +260,27 @@ export default function UserBillingPage() {
             </div>
 
             {/* Invoices List */}
-            <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800 rounded-3xl p-6">
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-600">
                     <FileText className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold">Transaction History</h2>
-                    <p className="text-xs text-slate-400">Verifiable tax invoices and payment slips</p>
+                    <h2 className="text-lg font-bold text-slate-900">Transaction History</h2>
+                    <p className="text-xs text-slate-500">Verifiable tax invoices and payment slips</p>
                   </div>
                 </div>
-                <span className="px-3 py-1 bg-slate-950 border border-slate-800 rounded-full text-xs font-semibold text-slate-400">
+                <span className="px-3 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs font-semibold text-slate-600">
                   {invoices.length} Invoices
                 </span>
               </div>
 
               {invoices.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-12 bg-slate-950/40 rounded-2xl text-center border border-slate-800/40">
-                  <Inbox className="w-12 h-12 text-slate-600 mb-3" />
-                  <p className="text-slate-400 font-medium">No invoice logs found</p>
-                  <p className="text-xs text-slate-500 mt-1">Paid courses and premium subscription invoices will appear here.</p>
+                <div className="flex flex-col items-center justify-center p-12 bg-slate-50 rounded-2xl text-center border border-slate-200">
+                  <Inbox className="w-12 h-12 text-slate-450 mb-3" />
+                  <p className="text-slate-600 font-medium">No invoice logs found</p>
+                  <p className="text-xs text-slate-550 mt-1">Paid courses and premium subscription invoices will appear here.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -291,34 +291,34 @@ export default function UserBillingPage() {
                     return (
                       <div 
                         key={inv.id}
-                        className="p-4 bg-slate-950/60 border border-slate-800/60 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-700 transition duration-200"
+                        className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-300 transition duration-200"
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-200">{inv.invoice_number}</span>
+                            <span className="font-bold text-slate-800">{inv.invoice_number}</span>
                             {isRefunded ? (
-                              <span className="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-amber-500/15 text-amber-500 border border-amber-500/20">
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-amber-500/15 text-amber-600 border border-amber-500/20">
                                 REFUNDED
                               </span>
                             ) : refundStatus === 'pending' ? (
-                              <span className="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-500/15 text-blue-500 border border-blue-500/20">
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-blue-500/15 text-blue-600 border border-blue-500/20">
                                 REFUND PENDING
                               </span>
                             ) : (
-                              <span className="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-500/15 text-emerald-500 border border-emerald-500/20">
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-500/15 text-emerald-700 border border-emerald-500/20">
                                 PAID
                               </span>
                             )}
                           </div>
-                          <div className="text-xs text-slate-400">
+                          <div className="text-xs text-slate-500">
                             {new Date(inv.created_at).toLocaleDateString()} • {inv.plan.toUpperCase()} Plan
                           </div>
                         </div>
 
                         <div className="flex items-center justify-between md:justify-end gap-6">
                           <div className="text-right">
-                            <span className="font-extrabold text-lg text-white">₹{Number(inv.total).toFixed(2)}</span>
-                            <span className="block text-3xs text-slate-500">Includes {inv.tax_type}</span>
+                            <span className="font-extrabold text-lg text-slate-900">₹{Number(inv.total).toFixed(2)}</span>
+                            <span className="block text-[10px] text-slate-500">Includes {inv.tax_type}</span>
                           </div>
 
                           <div className="flex items-center gap-2">
@@ -326,7 +326,7 @@ export default function UserBillingPage() {
                               <a 
                                 href={inv.pdf_url} 
                                 download
-                                className="p-2.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white rounded-xl transition duration-150"
+                                className="p-2.5 bg-white border border-slate-200 hover:border-slate-350 text-slate-600 hover:text-slate-900 rounded-xl transition duration-150 shadow-2xs"
                                 title="Download PDF Invoice"
                               >
                                 <Download className="w-4 h-4" />
@@ -336,7 +336,7 @@ export default function UserBillingPage() {
                             {!isRefunded && !refundStatus && !inv.refundRequested && (
                               <button
                                 onClick={() => handleOpenRefundModal(inv)}
-                                className="px-3 py-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-red-400 text-xs font-bold rounded-xl transition duration-150"
+                                className="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-red-600 text-xs font-bold rounded-xl transition duration-150 shadow-2xs"
                               >
                                 Claim Refund
                               </button>
@@ -355,23 +355,23 @@ export default function UserBillingPage() {
           {/* Right Column: Verifiable Certificates & Accomplishments */}
           <div className="space-y-8">
             
-            <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800 rounded-3xl p-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-indigo-600/20 to-transparent rounded-bl-3xl" />
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 relative overflow-hidden shadow-sm">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-indigo-500/5 to-transparent rounded-bl-3xl" />
 
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600">
                   <Award className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold">Verifiable Certificates</h2>
-                  <p className="text-xs text-slate-400">Share your graduation accomplishments</p>
+                  <h2 className="text-lg font-bold text-slate-900">Verifiable Certificates</h2>
+                  <p className="text-xs text-slate-500">Share your graduation accomplishments</p>
                 </div>
               </div>
 
               {certificates.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-8 bg-slate-950/40 rounded-2xl text-center border border-slate-800/40">
-                  <Award className="w-10 h-10 text-slate-700 mb-2" />
-                  <p className="text-slate-400 font-medium text-sm">No certificates earned yet</p>
+                <div className="flex flex-col items-center justify-center p-8 bg-slate-50 rounded-2xl text-center border border-slate-200">
+                  <Award className="w-10 h-10 text-slate-350 mb-2" />
+                  <p className="text-slate-600 font-medium text-sm">No certificates earned yet</p>
                   <p className="text-xs text-slate-500 mt-1">Complete a course syllabus to 100% to unlock a PDF credential.</p>
                 </div>
               ) : (
@@ -383,22 +383,22 @@ export default function UserBillingPage() {
                     return (
                       <div 
                         key={cert.id}
-                        className="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-3"
+                        className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3"
                       >
                         <div>
-                          <span className="text-2xs text-amber-400 font-bold tracking-wider block mb-1">GRADUATE CREDENTIAL</span>
-                          <span className="font-bold text-slate-200 text-sm block leading-tight">{cert.courses?.title || 'Course Syllabus'}</span>
-                          <span className="text-3xs text-slate-500">Issued: {new Date(cert.issued_at).toLocaleDateString()}</span>
+                          <span className="text-[10px] text-amber-655 font-bold tracking-wider block mb-1 uppercase">GRADUATE CREDENTIAL</span>
+                          <span className="font-bold text-slate-800 text-sm block leading-tight">{cert.courses?.title || 'Course Syllabus'}</span>
+                          <span className="text-[10px] text-slate-550">Issued: {new Date(cert.issued_at).toLocaleDateString()}</span>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-900">
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
                           <a
                             href={`/api/courses/certificate/download?courseId=${cert.course_id}&userId=${encodeURIComponent(user?.email || '')}&sendEmail=true`}
                             download
                             onClick={() => {
                               alert(`Your certificate download has started, and a copy has been sent to your registered email: ${user?.email}`);
                             }}
-                            className="px-3 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 hover:text-white text-slate-300 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition text-center justify-center decoration-none"
+                            className="px-3 py-2 bg-white border border-slate-200 hover:border-slate-300 hover:text-slate-900 text-slate-600 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition text-center justify-center decoration-none shadow-2xs"
                           >
                             <Download className="w-3.5 h-3.5" /> PDF
                           </a>
@@ -407,7 +407,7 @@ export default function UserBillingPage() {
                             href={linkedinShareUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-3 py-2 bg-indigo-600/10 hover:bg-indigo-600 text-indigo-400 hover:text-white border border-indigo-500/20 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition"
+                            className="px-3 py-2 bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-200 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition"
                           >
                             <Share2 className="w-3.5 h-3.5" /> Share
                           </a>
@@ -420,18 +420,18 @@ export default function UserBillingPage() {
             </div>
 
             {/* Quick Billing Help */}
-            <div className="bg-slate-900/30 border border-slate-800/80 rounded-3xl p-6">
-              <h3 className="font-bold text-slate-300 mb-3 flex items-center gap-2">
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+              <h3 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
                 <HelpCircle className="w-5 h-5 text-red-500" /> Frequently Asked Questions
               </h3>
               <div className="space-y-4 text-xs">
                 <div>
-                  <h4 className="font-semibold text-slate-200 mb-1">How do I request a refund?</h4>
-                  <p className="text-slate-400">Clicking "Claim Refund" next to an invoice registers a request. Refunds are processed back to the original Stripe payment method in 5-10 days.</p>
+                  <h4 className="font-semibold text-slate-700 mb-1">How do I request a refund?</h4>
+                  <p className="text-slate-500">Clicking "Claim Refund" next to an invoice registers a request. Refunds are processed back to the original Stripe payment method in 5-10 days.</p>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-slate-200 mb-1">Where is my certificate?</h4>
-                  <p className="text-slate-400">Certificates are automatically compiled as verifiable PDFs once you reach 100% progress in any course dashboard.</p>
+                  <h4 className="font-semibold text-slate-700 mb-1">Where is my certificate?</h4>
+                  <p className="text-slate-500">Certificates are automatically compiled as verifiable PDFs once you reach 100% progress in any course dashboard.</p>
                 </div>
               </div>
             </div>
@@ -445,15 +445,15 @@ export default function UserBillingPage() {
       {/* Claim Refund Modal Form */}
       {showRefundModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl animate-in fade-in-50 zoom-in-95">
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl animate-in fade-in-50 zoom-in-95 text-slate-900">
             
-            <div className="px-6 py-4 bg-gradient-to-r from-red-950/20 to-slate-900 border-b border-slate-800 flex items-center justify-between">
-              <h3 className="font-bold text-white flex items-center gap-2">
+            <div className="px-6 py-4 bg-gradient-to-r from-red-50 to-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <h3 className="font-bold text-slate-900 flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-red-500" /> Request Transaction Refund
               </h3>
               <button 
                 onClick={() => setShowRefundModal(false)}
-                className="text-slate-500 hover:text-white transition"
+                className="text-slate-400 hover:text-slate-700 transition"
               >
                 ✕
               </button>
@@ -463,23 +463,23 @@ export default function UserBillingPage() {
               {refundSuccessMsg ? (
                 <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-emerald-400">{refundSuccessMsg}</p>
+                  <p className="text-sm text-emerald-600">{refundSuccessMsg}</p>
                 </div>
               ) : (
                 <>
-                  <div className="p-4 bg-slate-950 rounded-2xl text-xs space-y-1">
+                  <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-xs space-y-1">
                     <div className="flex justify-between">
                       <span className="text-slate-500">Invoice Number:</span>
-                      <span className="font-semibold text-slate-300">{selectedInvoice?.invoice_number}</span>
+                      <span className="font-semibold text-slate-700">{selectedInvoice?.invoice_number}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-500">Total Billed Amount:</span>
-                      <span className="font-bold text-white">₹{Number(selectedInvoice?.total).toFixed(2)}</span>
+                      <span className="font-bold text-slate-900">₹{Number(selectedInvoice?.total).toFixed(2)}</span>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-400 mb-2">
+                    <label className="block text-xs font-semibold text-slate-550 mb-2">
                       REASON FOR REFUND REQUEST
                     </label>
                     <textarea
@@ -488,7 +488,7 @@ export default function UserBillingPage() {
                       value={refundReason}
                       onChange={(e) => setRefundReason(e.target.value)}
                       placeholder="Please briefly explain why you are requesting a refund..."
-                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 focus:border-red-500 rounded-2xl text-sm text-white placeholder-slate-600 focus:outline-none transition duration-150"
+                      className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-red-500 rounded-2xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none transition duration-150"
                     />
                   </div>
 
@@ -496,7 +496,7 @@ export default function UserBillingPage() {
                     <button
                       type="button"
                       onClick={() => setShowRefundModal(false)}
-                      className="px-4 py-2 text-sm font-semibold text-slate-400 hover:text-white transition"
+                      className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-800 transition"
                     >
                       Cancel
                     </button>

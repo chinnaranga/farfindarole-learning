@@ -115,10 +115,10 @@ export default function CodingCatalogPage() {
 
   const getDifficultyColor = (diff: string) => {
     switch (diff) {
-      case 'easy': return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-      case 'medium': return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
-      case 'hard': return 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
-      default: return 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20';
+      case 'easy': return 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/25';
+      case 'medium': return 'bg-amber-500/10 text-amber-700 border border-amber-500/25';
+      case 'hard': return 'bg-rose-500/10 text-rose-700 border border-rose-500/25';
+      default: return 'bg-indigo-500/10 text-indigo-700 border border-indigo-500/25';
     }
   };
 
@@ -137,7 +137,7 @@ export default function CodingCatalogPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-955 flex items-center justify-center text-slate-400">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-500">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
           <span className="text-sm font-semibold tracking-wider">Configuring Coding Workspace...</span>
@@ -147,22 +147,22 @@ export default function CodingCatalogPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 text-white py-10 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 text-slate-900 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         
         {/* Header Hero banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900/60 to-purple-900/60 border border-slate-800 p-8 sm:p-10 mb-8 backdrop-blur-md shadow-2xl">
-          <div className="absolute -top-12 -right-12 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl"></div>
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-50 to-purple-50 border border-slate-200 p-8 sm:p-10 mb-8 shadow-sm">
+          <div className="absolute -top-12 -right-12 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-rose-500/5 rounded-full blur-3xl"></div>
           
           <div className="relative z-10 max-w-2xl">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 mb-4 uppercase tracking-widest leading-none">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-650 border border-indigo-500/20 mb-4 uppercase tracking-widest leading-none">
               <Cpu className="w-3.5 h-3.5" /> Coding Arena
             </span>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-3">
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-3">
               Master Data Structures & Algorithms
             </h1>
-            <p className="text-sm text-slate-350 leading-relaxed">
+            <p className="text-sm text-slate-600 leading-relaxed">
               Write, compile, and execute code in Monaco Editor against robust test suites. Optimize space and time complexities, bypass plagiarism checks, and earn prestigious badges.
             </p>
           </div>
@@ -172,70 +172,70 @@ export default function CodingCatalogPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
           
           {/* Circular solve progress */}
-          <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 p-6 rounded-2xl flex flex-col justify-between shadow-lg">
-            <h3 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-indigo-400" /> Solved Progress
+          <div className="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col justify-between shadow-sm">
+            <h3 className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-indigo-500" /> Solved Progress
             </h3>
             <div className="flex items-center gap-5">
               <div className="relative w-16 h-16 flex items-center justify-center">
                 <svg className="w-full h-full transform -rotate-90">
-                  <circle cx="32" cy="32" r="28" className="stroke-slate-800" strokeWidth="6" fill="transparent" />
+                  <circle cx="32" cy="32" r="28" className="stroke-slate-100" strokeWidth="6" fill="transparent" />
                   <circle cx="32" cy="32" r="28" className="stroke-indigo-500" strokeWidth="6" fill="transparent" 
                           strokeDasharray={2 * Math.PI * 28} 
                           strokeDashoffset={2 * Math.PI * 28 * (1 - (challenges.length ? totalSolved / challenges.length : 0))} 
                           strokeLinecap="round" />
                 </svg>
-                <span className="absolute text-xs font-black">{totalSolved}/{challenges.length}</span>
+                <span className="absolute text-xs font-black text-slate-900">{totalSolved}/{challenges.length}</span>
               </div>
               <div>
-                <p className="text-2xl font-black">{totalSolved}</p>
+                <p className="text-2xl font-black text-slate-900">{totalSolved}</p>
                 <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Problems Solved</p>
               </div>
             </div>
           </div>
 
           {/* XP Point Card */}
-          <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 p-6 rounded-2xl flex flex-col justify-between shadow-lg">
-            <h3 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-yellow-400" /> Coding Points
+          <div className="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col justify-between shadow-sm">
+            <h3 className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-yellow-500" /> Coding Points
             </h3>
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-black tracking-tight text-white">{userStats?.xp_points ?? 0}</span>
-              <span className="text-xs text-yellow-400 font-bold uppercase">XP</span>
+              <span className="text-4xl font-black tracking-tight text-slate-900">{userStats?.xp_points ?? 0}</span>
+              <span className="text-xs text-yellow-600 font-bold uppercase">XP</span>
             </div>
             <p className="text-[10px] text-slate-500 font-semibold mt-2 uppercase">Ranked on active platform levels</p>
           </div>
 
           {/* Streak Card */}
-          <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 p-6 rounded-2xl flex flex-col justify-between shadow-lg">
-            <h3 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Flame className="w-4 h-4 text-orange-400" /> Daily Streak
+          <div className="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col justify-between shadow-sm">
+            <h3 className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+              <Flame className="w-4 h-4 text-orange-500" /> Daily Streak
             </h3>
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-black tracking-tight text-orange-400">{userStats?.streak_days ?? 0}</span>
-              <span className="text-xs text-orange-300 font-bold uppercase">Days</span>
+              <span className="text-4xl font-black tracking-tight text-orange-500">{userStats?.streak_days ?? 0}</span>
+              <span className="text-xs text-orange-600 font-bold uppercase">Days</span>
             </div>
             <p className="text-[10px] text-slate-500 font-semibold mt-2 uppercase">Submit daily to protect streak</p>
           </div>
 
           {/* Difficulty breakdown list */}
-          <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 p-6 rounded-2xl shadow-lg flex flex-col justify-between">
-            <h3 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
-              <Filter className="w-4 h-4 text-teal-400" /> Difficulty Split
+          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+            <h3 className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Filter className="w-4 h-4 text-teal-500" /> Difficulty Split
             </h3>
             <div className="space-y-2">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-emerald-400 font-semibold">Easy</span>
-                <span className="font-mono font-bold">{easySolved}</span>
+                <span className="text-emerald-600 font-semibold">Easy</span>
+                <span className="font-mono font-bold text-slate-850">{easySolved}</span>
               </div>
-              <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+              <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                 <div className="bg-emerald-500 h-full" style={{ width: `${challenges.length ? (easySolved / challenges.length) * 100 : 0}%` }}></div>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-amber-400 font-semibold">Medium</span>
-                <span className="font-mono font-bold">{mediumSolved}</span>
+                <span className="text-amber-600 font-semibold">Medium</span>
+                <span className="font-mono font-bold text-slate-850">{mediumSolved}</span>
               </div>
-              <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+              <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                 <div className="bg-amber-500 h-full" style={{ width: `${challenges.length ? (mediumSolved / challenges.length) * 100 : 0}%` }}></div>
               </div>
             </div>
@@ -250,15 +250,15 @@ export default function CodingCatalogPage() {
           <div className="lg:col-span-2 space-y-6">
             
             {/* Search and Filters panel */}
-            <div className="flex flex-col sm:flex-row gap-4 p-4 bg-slate-900/40 backdrop-blur-sm border border-slate-800 rounded-2xl">
+            <div className="flex flex-col sm:flex-row gap-4 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
               <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-3 w-4.5 h-4.5 text-slate-500" />
+                <Search className="absolute left-3.5 top-3 w-4.5 h-4.5 text-slate-400" />
                 <input 
                   type="text" 
                   placeholder="Search challenges..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-11 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+                  className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
                 />
               </div>
 
@@ -266,7 +266,7 @@ export default function CodingCatalogPage() {
               <select 
                 value={difficultyFilter}
                 onChange={(e) => setDifficultyFilter(e.target.value)}
-                className="px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-300 text-sm focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer"
+                className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors cursor-pointer"
               >
                 <option value="all">All Difficulties</option>
                 <option value="easy">Easy</option>
@@ -278,7 +278,7 @@ export default function CodingCatalogPage() {
               <select 
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-300 text-sm focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer"
+                className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors cursor-pointer"
               >
                 <option value="all">All Categories</option>
                 <option value="DSA">DSA</option>
@@ -296,7 +296,7 @@ export default function CodingCatalogPage() {
                   return (
                     <div 
                       key={c.id} 
-                      className="bg-slate-900/30 hover:bg-slate-900/50 backdrop-blur-sm border border-slate-800/80 hover:border-slate-700/80 p-5 rounded-2xl flex items-center justify-between transition-all group shadow-sm hover:shadow-lg"
+                      className="bg-white hover:bg-slate-50/50 border border-slate-200 hover:border-slate-300 p-5 rounded-2xl flex items-center justify-between transition-all group shadow-sm hover:shadow-md"
                     >
                       <div className="flex-1 min-w-0 pr-4">
                         <div className="flex items-center gap-2 mb-2">
@@ -305,24 +305,24 @@ export default function CodingCatalogPage() {
                           </span>
                           <span className="text-[10px] text-slate-500 font-semibold uppercase">{c.category}</span>
                         </div>
-                        <h4 className="text-base font-extrabold text-slate-100 group-hover:text-indigo-400 transition-colors truncate">
+                        <h4 className="text-base font-extrabold text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
                           {c.title}
                         </h4>
                       </div>
                       
                       <div className="flex items-center gap-4">
                         <div className="text-right hidden sm:block">
-                          <span className="text-sm font-black text-slate-200">{c.points} XP</span>
+                          <span className="text-sm font-black text-slate-800">{c.points} XP</span>
                           <p className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider">Rewards</p>
                         </div>
                         {isSolved ? (
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                             <CheckCircle className="w-5 h-5" />
                           </div>
                         ) : (
                           <Link 
                             href={`/dashboard/coding/${c.id}`}
-                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-755 text-white font-bold text-xs rounded-xl shadow-sm hover:scale-[1.02] transition-all"
+                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm hover:scale-[1.02] transition-all"
                           >
                             Solve
                           </Link>
@@ -332,8 +332,8 @@ export default function CodingCatalogPage() {
                   );
                 })
               ) : (
-                <div className="text-center py-16 bg-slate-900/20 border border-slate-800 rounded-2xl text-slate-500">
-                  <Cpu className="w-12 h-12 mx-auto mb-3 text-slate-700 stroke-1" />
+                <div className="text-center py-16 bg-white border border-slate-200 rounded-2xl text-slate-500 shadow-sm">
+                  <Cpu className="w-12 h-12 mx-auto mb-3 text-slate-300 stroke-1" />
                   <p className="font-semibold text-sm">No challenges found matching filters</p>
                 </div>
               )}
@@ -345,9 +345,9 @@ export default function CodingCatalogPage() {
           <div className="space-y-6">
             
             {/* Top Coding Leaderboard */}
-            <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 p-6 rounded-2xl shadow-lg">
-              <h3 className="text-slate-300 text-sm font-black tracking-wider mb-4 flex items-center gap-2 uppercase">
-                <Trophy className="w-4 h-4 text-yellow-400" /> Leaderboard
+            <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm text-slate-900">
+              <h3 className="text-slate-800 text-sm font-black tracking-wider mb-4 flex items-center gap-2 uppercase">
+                <Trophy className="w-4 h-4 text-yellow-500" /> Leaderboard
               </h3>
               <div className="space-y-4">
                 {leaderboard.length > 0 ? (
@@ -357,25 +357,25 @@ export default function CodingCatalogPage() {
                       className={`flex items-center justify-between p-3 rounded-xl border transition-colors ${
                         user?.email === item.user_id 
                           ? 'bg-indigo-500/10 border-indigo-500/30' 
-                          : 'bg-slate-950/40 border-slate-800/40 hover:border-slate-800'
+                          : 'bg-slate-50 border-slate-100 hover:border-slate-200'
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${
                           idx === 0 ? 'bg-yellow-500 text-slate-900' :
                           idx === 1 ? 'bg-slate-300 text-slate-900' :
-                          idx === 2 ? 'bg-amber-600 text-white' : 'bg-slate-800 text-slate-400'
+                          idx === 2 ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-650'
                         }`}>
                           {idx + 1}
                         </div>
                         <div className="truncate">
-                          <p className="text-xs font-bold text-slate-200 truncate">{item.user_id.split('@')[0]}</p>
+                          <p className="text-xs font-bold text-slate-800 truncate">{item.user_id.split('@')[0]}</p>
                           <p className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold">
                             {item.problems_solved} Solved • {item.streak_days}d Streak
                           </p>
                         </div>
                       </div>
-                      <span className="text-xs font-black text-indigo-400">{item.xp_points} XP</span>
+                      <span className="text-xs font-black text-indigo-600">{item.xp_points} XP</span>
                     </div>
                   ))
                 ) : (
@@ -387,9 +387,9 @@ export default function CodingCatalogPage() {
             </div>
 
             {/* Coding Badges & Milestones */}
-            <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800 p-6 rounded-2xl shadow-lg">
-              <h3 className="text-slate-300 text-sm font-black tracking-wider mb-4 flex items-center gap-2 uppercase">
-                <Award className="w-4 h-4 text-indigo-400" /> Milestones Earned
+            <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm text-slate-900">
+              <h3 className="text-slate-800 text-sm font-black tracking-wider mb-4 flex items-center gap-2 uppercase">
+                <Award className="w-4 h-4 text-indigo-500" /> Milestones Earned
               </h3>
               
               {badges.length > 0 ? (
@@ -397,20 +397,20 @@ export default function CodingCatalogPage() {
                   {badges.map(b => (
                     <div 
                       key={b} 
-                      className="flex flex-col items-center justify-center p-3.5 bg-slate-950/60 border border-slate-800 rounded-xl text-center"
+                      className="flex flex-col items-center justify-center p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-center"
                     >
-                      <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20 mb-2">
+                      <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-600 border border-indigo-500/20 mb-2">
                         <Award className="w-5 h-5" />
                       </div>
-                      <span className="text-[10px] font-black text-slate-200 capitalize">
+                      <span className="text-[10px] font-black text-slate-800 capitalize">
                         {b.replace('_', ' ')}
                       </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 bg-slate-950/30 border border-slate-800/60 rounded-xl text-slate-500">
-                  <Award className="w-8 h-8 mx-auto mb-2 text-slate-700 stroke-1" />
+                <div className="text-center py-8 bg-slate-50 border border-slate-200 rounded-xl text-slate-500">
+                  <Award className="w-8 h-8 mx-auto mb-2 text-slate-300 stroke-1" />
                   <p className="text-xs">No badges unlocked. Solve challenges to earn milestones.</p>
                 </div>
               )}
@@ -423,4 +423,5 @@ export default function CodingCatalogPage() {
       </div>
     </div>
   );
+}
 }
