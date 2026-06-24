@@ -1,6 +1,6 @@
-export const runtime = 'edge'
-
 'use client'
+
+export const runtime = 'edge'
 
 import { useState, useEffect } from 'react'
 import { getCourse, getLessons, getProgressDetails, supabase, getUserSubscription } from '@/lib/supabase'
