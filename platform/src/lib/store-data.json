@@ -1,18 +1,10 @@
 {
   "sessions": [
     {
-      "id": "1237d3ca-54f2-41ec-9f34-705d00ca87ae",
-      "name": "admin",
-      "email": "admin@farfindarole.com",
-      "lastActive": "2026-06-24T07:16:39.813Z",
-      "role": "admin",
-      "device": "Web Browser"
-    },
-    {
       "id": "143fce8e-3e3e-4b8b-baae-c7b963452c5a",
       "name": "Chinna Ranga Swamy Reddy Ravipati",
       "email": "ravipatichinnarangaswamyreddy@gmail.com",
-      "lastActive": "2026-06-24T07:16:37.068Z",
+      "lastActive": "2026-06-24T13:01:26.702Z",
       "role": "pro",
       "device": "Web Browser"
     }
