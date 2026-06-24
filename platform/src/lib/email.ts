@@ -1,10 +1,7 @@
 import { supabase } from './supabase'
-import fs from 'fs'
-import path from 'path'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const RESEND_TEST_RECIPIENT = process.env.RESEND_TEST_RECIPIENT
-const EMAIL_LOG_PATH = path.join(process.cwd(), 'scripts/email-debug.log')
 
 export interface SendEmailParams {
   to: string
@@ -38,9 +35,9 @@ export async function sendEmail({ to, subject, html, emailType, attachments }: S
   try {
     if (!RESEND_API_KEY) {
       // ── LOCAL LOG FALLBACK MODE ──
-      console.warn('[EMAIL-SYSTEM] RESEND_API_KEY is not defined. Falling back to local logging in scripts/email-debug.log.')
+      console.warn('[EMAIL-SYSTEM] RESEND_API_KEY is not defined. Logging email to console.')
       
-      const logEntry = `
+      console.log(`
 ========================================
 TIMESTAMP: ${new Date().toISOString()}
 TO: ${targetRecipient} (Original: ${cleanRecipient})
@@ -50,14 +47,7 @@ SUBJECT: ${subject}
 HTML BODY:
 ${html}
 ========================================
-\n`
-      
-      // Ensure logs directory exists
-      const dir = path.dirname(EMAIL_LOG_PATH)
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true })
-      }
-      fs.appendFileSync(EMAIL_LOG_PATH, logEntry, 'utf8')
+`)
     } else {
       // ── CLIENTLESS RESEND API FETCH ──
       const res = await fetch('https://api.resend.com/emails', {

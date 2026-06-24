@@ -3,8 +3,8 @@ import { supabase } from '@/lib/supabase';
 import { generateCertificatePDF } from '@/lib/pdf-generator';
 import { sendEmail } from '@/lib/email';
 import { getCertificateEmail } from '@/lib/email-templates';
-import fs from 'fs';
-import path from 'path';
+
+export const runtime = 'edge';
 
 export async function GET(request: NextRequest) {
   try {
@@ -212,30 +212,13 @@ export async function GET(request: NextRequest) {
       day: 'numeric'
     });
 
-    // 5. Generate PDF file path
-    const storageDir = path.join(process.cwd(), 'public/storage/certificates');
-    const fileName = `certificate_${verificationCode}.pdf`;
-    const filePath = path.join(storageDir, fileName);
-
-    // Ensure the folder exists
-    if (!fs.existsSync(storageDir)) {
-      fs.mkdirSync(storageDir, { recursive: true });
-    }
-
-    // Compile the PDF
-    await generateCertificatePDF({
+    // 5. Compile the PDF in-memory
+    const fileBuffer = await generateCertificatePDF({
       verificationCode,
       studentName,
       courseTitle,
       issuedAt: formattedDate
     });
-
-    // Read the PDF from disk
-    if (!fs.existsSync(filePath)) {
-      return NextResponse.json({ success: false, error: 'Failed to generate PDF file' }, { status: 500 });
-    }
-
-    const fileBuffer = fs.readFileSync(filePath);
 
     // 6. Asynchronously send the certificate email in the background if requested
     if (sendEmailParam === 'true') {

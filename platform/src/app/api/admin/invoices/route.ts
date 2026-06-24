@@ -3,8 +3,9 @@ import { createClient } from '@supabase/supabase-js'
 import { sendEmail } from '@/lib/email'
 import { getInvoiceResendEmail } from '@/lib/email-templates'
 import { getAllUsers } from '@/lib/server-store'
-import fs from 'fs'
-import path from 'path'
+import { generateInvoicePDF } from '@/lib/pdf-generator'
+
+export const runtime = 'edge'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
@@ -85,16 +86,30 @@ export async function POST(req: NextRequest) {
       invoiceNumber: invoice.invoice_number
     })
 
-    const filePath = path.join(process.cwd(), 'public', invoice.pdf_url)
     let attachments: any[] = []
-
-    if (fs.existsSync(filePath)) {
-      const pdfBase64 = fs.readFileSync(filePath).toString('base64')
+    try {
+      // Regenerate invoice PDF on the fly in-memory to avoid filesystem dependencies
+      const invoicePdfData = {
+        invoiceNumber: invoice.invoice_number,
+        transactionId: invoice.transaction_id || 'N/A',
+        date: new Date(invoice.created_at).toLocaleDateString('en-US'),
+        customerName,
+        customerEmail,
+        billingAddress: invoice.billing_address || '',
+        itemName: invoice.item_name || 'Premium Access Subscription',
+        amount: invoice.amount || 0,
+        tax: invoice.tax || 0,
+        total: invoice.total || 0,
+        paymentMethod: invoice.payment_method || 'Stripe Card'
+      }
+      const pdfBuffer = await generateInvoicePDF(invoicePdfData)
       attachments = [{
-        content: pdfBase64,
+        content: pdfBuffer.toString('base64'),
         filename: `Invoice_${invoice.invoice_number}.pdf`,
         type: 'application/pdf'
       }]
+    } catch (pdfErr) {
+      console.error('Failed to regenerate invoice PDF for resend:', pdfErr)
     }
 
     const emailRes = await sendEmail({

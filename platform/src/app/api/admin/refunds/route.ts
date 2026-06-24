@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import { sendEmail } from '@/lib/email'
 import { getRefundConfirmationEmail } from '@/lib/email-templates'
 import { generateInvoicePDF } from '@/lib/pdf-generator'
-import fs from 'fs'
-import path from 'path'
+
+export const runtime = 'edge'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
@@ -99,14 +99,14 @@ export async function POST(req: NextRequest) {
       console.error('Failed to update invoice status:', updateError)
     }
 
-    // Compile Credit Note PDF
+    // Compile Credit Note PDF in-memory
     const refundInvoiceNumber = `REF-${invoice.invoice_number}`
-    let refundPdfUrl = ''
+    let pdfBuffer: Buffer | null = null
     try {
-      refundPdfUrl = await generateInvoicePDF({
+      pdfBuffer = await generateInvoicePDF({
         invoiceNumber: refundInvoiceNumber,
         transactionId: invoice.transaction_id || 'N/A',
-        date: new Date().toLocaleDateString(),
+        date: new Date().toLocaleDateString('en-US'),
         customerName: 'Student',
         customerEmail: invoice.user_id,
         billingAddress: '',
@@ -129,12 +129,10 @@ export async function POST(req: NextRequest) {
         reason: reason || 'Admin manual refund'
       })
 
-      const filePath = path.join(process.cwd(), 'public', refundPdfUrl)
       let attachments: any[] = []
-      if (fs.existsSync(filePath)) {
-        const pdfBase64 = fs.readFileSync(filePath).toString('base64')
+      if (pdfBuffer) {
         attachments = [{
-          content: pdfBase64,
+          content: pdfBuffer.toString('base64'),
           filename: `CreditNote_${refundInvoiceNumber}.pdf`,
           type: 'application/pdf'
         }]

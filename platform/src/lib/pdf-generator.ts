@@ -1,6 +1,4 @@
 import PDFDocument from 'pdfkit'
-import fs from 'fs'
-import path from 'path'
 
 export interface InvoicePDFData {
   invoiceNumber: string
@@ -28,20 +26,19 @@ export interface CertificatePDFData {
  * and saves them directly to local public storage folders.
  */
 
-export function generateInvoicePDF(data: InvoicePDFData): Promise<string> {
+export function generateInvoicePDF(data: InvoicePDFData): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
-      const storageDir = path.join(process.cwd(), 'public/storage/invoices')
-      if (!fs.existsSync(storageDir)) {
-        fs.mkdirSync(storageDir, { recursive: true })
-      }
-      
-      const fileName = `invoice_${data.invoiceNumber}.pdf`
-      const filePath = path.join(storageDir, fileName)
-      
       const doc = new PDFDocument({ size: 'A4', margin: 50 })
-      const stream = fs.createWriteStream(filePath)
-      doc.pipe(stream)
+      const chunks: any[] = []
+      
+      doc.on('data', (chunk) => chunks.push(chunk))
+      doc.on('end', () => {
+        resolve(Buffer.concat(chunks))
+      })
+      doc.on('error', (err) => {
+        reject(err)
+      })
       
       // Theme colors
       const primaryColor = '#dc2626' // Red
@@ -162,35 +159,26 @@ export function generateInvoicePDF(data: InvoicePDFData): Promise<string> {
          
       doc.end()
       
-      stream.on('finish', () => {
-        resolve(`/storage/invoices/${fileName}`)
-      })
-      
-      stream.on('error', (err) => {
-        reject(err)
-      })
-      
     } catch (e) {
       reject(e)
     }
   })
 }
 
-export function generateCertificatePDF(data: CertificatePDFData): Promise<string> {
+export function generateCertificatePDF(data: CertificatePDFData): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
-      const storageDir = path.join(process.cwd(), 'public/storage/certificates')
-      if (!fs.existsSync(storageDir)) {
-        fs.mkdirSync(storageDir, { recursive: true })
-      }
-      
-      const fileName = `certificate_${data.verificationCode}.pdf`
-      const filePath = path.join(storageDir, fileName)
-      
       // Horizontal A4 layout (842 x 595 points)
       const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 40 })
-      const stream = fs.createWriteStream(filePath)
-      doc.pipe(stream)
+      const chunks: any[] = []
+      
+      doc.on('data', (chunk) => chunks.push(chunk))
+      doc.on('end', () => {
+        resolve(Buffer.concat(chunks))
+      })
+      doc.on('error', (err) => {
+        reject(err)
+      })
       
       // Theme colors
       const bgParchment = '#fdfbf7'
@@ -366,14 +354,6 @@ export function generateCertificatePDF(data: CertificatePDFData): Promise<string
          .text(`Verify authenticity online at: ${appUrl}/verify/certificate/${data.verificationCode}`, 40, 542, { align: 'center', width: 762 })
          
       doc.end()
-      
-      stream.on('finish', () => {
-        resolve(`/storage/certificates/${fileName}`)
-      })
-      
-      stream.on('error', (err) => {
-        reject(err)
-      })
       
     } catch (e) {
       reject(e)

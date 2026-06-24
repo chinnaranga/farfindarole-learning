@@ -9,8 +9,8 @@ import {
   getRefundConfirmationEmail 
 } from '@/lib/email-templates'
 import { generateInvoicePDF } from '@/lib/pdf-generator'
-import fs from 'fs'
-import path from 'path'
+
+export const runtime = 'edge'
 
 // Initialize Stripe client lazily to prevent module load crashes when key is temporarily missing
 let stripeInstance: Stripe | null = null
@@ -381,13 +381,14 @@ export async function POST(req: NextRequest) {
         }
         const itemName = `${displayNames[planName] || 'Pro Plan'} - ${billingPeriod === 'annually' ? 'Annual' : 'Monthly'}`
 
-        // Generate PDF invoice
-        let pdfUrl = ''
+        // Generate PDF invoice in-memory
+        let pdfBuffer: Buffer | null = null
+        let pdfUrl = `/storage/invoices/invoice_${invoiceNumber}.pdf`
         try {
-          pdfUrl = await generateInvoicePDF({
+          pdfBuffer = await generateInvoicePDF({
             invoiceNumber,
             transactionId: paymentIntentId,
-            date: new Date(invoice.created * 1000).toLocaleDateString(),
+            date: new Date(invoice.created * 1000).toLocaleDateString('en-US'),
             customerName,
             customerEmail,
             billingAddress,
@@ -397,7 +398,7 @@ export async function POST(req: NextRequest) {
             total,
             paymentMethod: 'Stripe Card'
           })
-          console.log(`[Stripe Webhook] Invoice PDF generated at: ${pdfUrl}`)
+          console.log(`[Stripe Webhook] Invoice PDF generated in-memory.`)
         } catch (e) {
           console.error('Failed to generate invoice PDF:', e)
         }
@@ -424,33 +425,27 @@ export async function POST(req: NextRequest) {
         }
 
         // Send Purchase Confirmation Email with Attachment
-        if (pdfUrl) {
+        if (pdfBuffer) {
           try {
             const html = getPurchaseConfirmationEmail({
               userName: customerName,
               itemName,
               amount: `₹${total.toFixed(2)}`,
               transactionId: paymentIntentId,
-              date: new Date(invoice.created * 1000).toLocaleDateString()
+              date: new Date(invoice.created * 1000).toLocaleDateString('en-US')
             })
 
-            const filePath = path.join(process.cwd(), 'public', pdfUrl)
-            if (fs.existsSync(filePath)) {
-              const pdfBase64 = fs.readFileSync(filePath).toString('base64')
-              await sendEmail({
-                to: customerEmail,
-                subject: `Your Course Purchase is Confirmed! (Invoice: ${invoiceNumber})`,
-                html,
-                emailType: 'purchase_confirmation',
-                attachments: [{
-                  content: pdfBase64,
-                  filename: `Invoice_${invoiceNumber}.pdf`,
-                  type: 'application/pdf'
-                }]
-              })
-            } else {
-              console.error(`[Stripe Webhook] Generated PDF not found at path: ${filePath}`)
-            }
+            await sendEmail({
+              to: customerEmail,
+              subject: `Your Course Purchase is Confirmed! (Invoice: ${invoiceNumber})`,
+              html,
+              emailType: 'purchase_confirmation',
+              attachments: [{
+                content: pdfBuffer.toString('base64'),
+                filename: `Invoice_${invoiceNumber}.pdf`,
+                type: 'application/pdf'
+              }]
+            })
           } catch (e) {
             console.error('Failed to send purchase confirmation email:', e)
           }
@@ -572,14 +567,14 @@ export async function POST(req: NextRequest) {
             reason: refundReason
           })
 
-        // Generate Credit Note PDF
+        // Generate Credit Note PDF in-memory
         const refundInvoiceNumber = `REF-${invData.invoice_number}`
-        let refundPdfUrl = ''
+        let pdfBuffer: Buffer | null = null
         try {
-          refundPdfUrl = await generateInvoicePDF({
+          pdfBuffer = await generateInvoicePDF({
             invoiceNumber: refundInvoiceNumber,
             transactionId: chargeId,
-            date: new Date().toLocaleDateString(),
+            date: new Date().toLocaleDateString('en-US'),
             customerName: charge.billing_details?.name || 'Student',
             customerEmail: charge.billing_details?.email || invData.user_id,
             billingAddress: invData.billing_address || '',
@@ -604,21 +599,22 @@ export async function POST(req: NextRequest) {
             reason: refundReason
           })
 
-          const filePath = path.join(process.cwd(), 'public', refundPdfUrl)
-          if (fs.existsSync(filePath)) {
-            const pdfBase64 = fs.readFileSync(filePath).toString('base64')
-            await sendEmail({
-              to: customerEmail,
-              subject: `Your Refund Has Been Processed`,
-              html,
-              emailType: 'refund_confirmation',
-              attachments: [{
-                content: pdfBase64,
-                filename: `CreditNote_${refundInvoiceNumber}.pdf`,
-                type: 'application/pdf'
-              }]
-            })
+          let attachments: any[] = []
+          if (pdfBuffer) {
+            attachments = [{
+              content: pdfBuffer.toString('base64'),
+              filename: `CreditNote_${refundInvoiceNumber}.pdf`,
+              type: 'application/pdf'
+            }]
           }
+
+          await sendEmail({
+            to: customerEmail,
+            subject: `Your Refund Has Been Processed`,
+            html,
+            emailType: 'refund_confirmation',
+            attachments
+          })
         } catch (e) {
           console.error('Failed to send refund confirmation email:', e)
         }

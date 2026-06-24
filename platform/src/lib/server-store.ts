@@ -1,7 +1,4 @@
-import fs from 'fs'
-import path from 'path'
-
-const STORE_PATH = path.join(process.cwd(), 'src/lib/store-data.json')
+import storeDataJson from './store-data.json'
 
 interface StoreData {
   sessions: Array<{
@@ -39,72 +36,15 @@ interface StoreData {
   users?: any[]
 }
 
+// Global mutable store in memory, deep-copied from the JSON file
+let globalStore: StoreData = JSON.parse(JSON.stringify(storeDataJson))
+
 function getStore(): StoreData {
-  try {
-    if (fs.existsSync(STORE_PATH)) {
-      const content = fs.readFileSync(STORE_PATH, 'utf8')
-      const parsed = JSON.parse(content)
-      return {
-        sessions: parsed.sessions || [],
-        userRoles: parsed.userRoles || {},
-        progress: parsed.progress || {},
-        courseProgress: parsed.courseProgress || {},
-        certificates: parsed.certificates || [],
-        courses: parsed.courses || [],
-        modules: parsed.modules || [],
-        lessons: parsed.lessons || [],
-        quizzes: parsed.quizzes || [],
-        assignments: parsed.assignments || [],
-        flashcards: parsed.flashcards || [],
-        exam_papers: parsed.exam_papers || [],
-        rubrics: parsed.rubrics || [],
-        templates: parsed.templates || [],
-        prompt_history: parsed.prompt_history || [],
-        exports: parsed.exports || [],
-        analytics: parsed.analytics || { totalGenerations: 0, dailyGenerations: 0, monthlyGenerations: 0, templateUsage: {}, topicUsage: {}, downloads: {} },
-        workspaces: parsed.workspaces || [],
-        comments: parsed.comments || [],
-        users: parsed.users || []
-      }
-    }
-  } catch (e) {
-    console.error('Failed to read server store:', e)
-  }
-  return { 
-    sessions: [], 
-    userRoles: {}, 
-    progress: {}, 
-    courseProgress: {}, 
-    certificates: [],
-    courses: [],
-    modules: [],
-    lessons: [],
-    quizzes: [],
-    assignments: [],
-    flashcards: [],
-    exam_papers: [],
-    rubrics: [],
-    templates: [],
-    prompt_history: [],
-    exports: [],
-    analytics: { totalGenerations: 0, dailyGenerations: 0, monthlyGenerations: 0, templateUsage: {}, topicUsage: {}, downloads: {} },
-    workspaces: [],
-    comments: [],
-    users: []
-  }
+  return globalStore
 }
 
 function writeStore(data: StoreData) {
-  try {
-    // Ensure parent directories exist
-    const dir = path.dirname(STORE_PATH)
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true })
-    }
-    fs.writeFileSync(STORE_PATH, JSON.stringify(data, null, 2), 'utf8')
-  } catch (e) {
-    console.error('Failed to write server store:', e)
-  }
+  globalStore = data
 }
 
 export function registerSession(name: string, email: string, role: string, device?: string, id?: string) {
