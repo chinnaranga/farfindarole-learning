@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: #f8fafc; /* Cool Slate 50 neutral background */
+    --foreground: #0f172a; /* Dark Slate 900 primary text */
+    
+    --card: #ffffff; /* Clean high-contrast white card blocks */
+    --card-foreground: #0f172a;
+    
+    --primary: #dc2626; /* Crimson Red primary accent */
+    --primary-foreground: #ffffff;
+    
+    --secondary: #f1f5f9; /* Soft Slate 100 panels */
+    --secondary-foreground: #0f172a;
+    
+    --muted: #f8fafc;
+    --muted-foreground: #64748b; /* Slate 500 secondary text */
+    
+    --accent: #dc2626;
+    --accent-foreground: #ffffff;
+    
+    --border: #e2e8f0; /* Crisp Slate 200 borders */
+    --input: #ffffff;
+    --ring: #dc2626;
+    
+    --radius: 0.75rem;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Premium Light-Slate Glass Cards */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03), 0 1px 3px rgba(15, 23, 42, 0.02);
+}
+
+.glass-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-hover:hover {
+  border-color: rgba(220, 38, 38, 0.3);
+  box-shadow: 0 12px 25px -10px rgba(220, 38, 38, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #dc2626;
+}
+
+/* Animations */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.4;
+    box-shadow: 0 0 15px rgba(220, 38, 38, 0.05);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 25px rgba(220, 38, 38, 0.15);
+  }
+}
+
+.glow-pulse {
+  animation: pulseGlow 4s infinite;
+}
+
+/* Simulated Audio/Video Wave Visualizer */
+@keyframes soundWave {
+  0%, 100% {
+    transform: scaleY(0.2);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.animate-wave-bar {
+  animation: soundWave 1.2s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+/* Shimmer load states */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.shimmer::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 20%,
+    rgba(255, 255, 255, 0.4) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmer 2s infinite;
+  content: '';
+}

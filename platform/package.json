@@ -1,0 +1,41 @@
+{
+  "name": "platform",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test-email": "node scripts/test-email-send.js",
+    "test-db": "node scripts/test-db.js",
+    "test-update-lesson": "node scripts/test-update-lesson.js",
+    "check-logs": "node scripts/check-logs.js"
+  },
+  "dependencies": {
+    "@google/genai": "^2.9.0",
+    "@monaco-editor/react": "^4.7.0",
+    "@supabase/supabase-js": "^2.108.2",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.21.0",
+    "next": "16.2.9",
+    "openai": "^6.44.0",
+    "pdfkit": "^0.19.1",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "stripe": "^22.2.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/pdfkit": "^0.17.6",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "babel-plugin-react-compiler": "1.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
