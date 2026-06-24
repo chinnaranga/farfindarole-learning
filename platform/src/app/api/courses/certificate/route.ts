@@ -1,6 +1,3 @@
-export const runtime = 'edge';
-export const runtime = 'edge';
-
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { saveCertificate } from '@/lib/server-store';
@@ -85,4 +82,81 @@ export async function POST(request: NextRequest) {
       if (!hasPassed) {
         return NextResponse.json({
           success: false,
-          error: `Requirements not met: You must pass "${quiz.title}" (${threshold}
+          error: `Requirements not met: You must pass "${quiz.title}" (${threshold}% required).`
+        }, { status: 400 });
+      }
+    }
+
+    // 3. Check if certificate already exists
+    const { data: existingCert, error: existErr } = await supabase
+      .from('certificates')
+      .select('verification_code, certificate_url')
+      .eq('user_id', email)
+      .eq('course_id', courseId)
+      .maybeSingle();
+
+    if (existErr) {
+      console.error('[CERT] Failed to check existing cert:', existErr.message);
+      return NextResponse.json({ success: false, error: 'Failed to verify existing certificates' }, { status: 500 });
+    }
+
+    // Return existing certificate if already issued
+    if (existingCert) {
+      return NextResponse.json({
+        success: true,
+        verificationCode: existingCert.verification_code,
+        certificateUrl: existingCert.certificate_url,
+        alreadyIssued: true
+      });
+    }
+
+    // 4. Generate new certificate
+    const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const verificationCode = `FAR-${email.slice(0, 3).toUpperCase()}-${courseId.slice(-4).toUpperCase()}-${randomPart}`;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const certificateUrl = `${baseUrl}/verify/certificate/${verificationCode}`;
+
+    const { error: insertErr } = await supabase
+      .from('certificates')
+      .insert({
+        user_id: email,
+        course_id: courseId,
+        verification_code: verificationCode,
+        certificate_url: certificateUrl
+      });
+
+    if (insertErr) {
+      console.error('[CERT] Failed to insert certificate:', insertErr.message);
+      return NextResponse.json({ success: false, error: 'Failed to save certificate. Please try again.' }, { status: 500 });
+    }
+
+    // 5. Sync to server-store (best effort — never fails the request)
+    try {
+      saveCertificate(email, courseId, certificateUrl);
+    } catch (e) {
+      console.warn('[CERT] server-store sync skipped:', e);
+    }
+
+    // 6. Also upsert into course_completions if table exists (best effort)
+    try {
+      await supabase.from('course_completions').upsert({
+        user_id: email,
+        course_id: courseId,
+        completed_at: new Date().toISOString(),
+        certificate_url: certificateUrl
+      });
+    } catch (e) {
+      console.warn('[CERT] course_completions upsert skipped:', e);
+    }
+
+    return NextResponse.json({
+      success: true,
+      verificationCode,
+      certificateUrl
+    });
+
+  } catch (error: any) {
+    console.error('[CERT] Unhandled error:', error.message);
+    return NextResponse.json({ success: false, error: error.message || 'Internal Server Error' }, { status: 500 });
+  }
+}

@@ -1,6 +1,3 @@
-export const runtime = 'edge';
-export const runtime = 'edge';
-
 import { NextRequest, NextResponse } from 'next/server'
 import { updateCourseProgress } from '@/lib/server-store'
 import { supabase } from '@/lib/supabase'
@@ -38,4 +35,23 @@ export async function POST(request: NextRequest) {
           .select('id')
           .eq('recipient', userId.toLowerCase())
           .eq('email_type', 'completion')
-          .ilike('subject', `ompleted ${course.title}
+          .ilike('subject', `%completed ${course.title}%`)
+          .maybeSingle()
+
+        if (!existingLog) {
+          triggerCompletionEmail(userId, courseId).catch(err => {
+            console.error('[EMAIL-TRIGGER] Failed to trigger completion email:', err)
+          })
+          
+          triggerMilestoneEmail(userId, courseId, 100).catch(err => {
+            console.error('[EMAIL-TRIGGER] Failed to trigger 100% milestone email:', err)
+          })
+        }
+      }
+    }
+
+    return NextResponse.json({ success: true, data })
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+  }
+}

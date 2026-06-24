@@ -1,6 +1,3 @@
-export const runtime = 'edge';
-export const runtime = 'edge';
-
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { generateGemini } from '@/ai/gemini';
@@ -48,11 +45,7 @@ Student's Current Code:
 ${code}
 \`\`\`
 
-${errorMsg ? `Run / Compile Error Output:
-\`\`\`
-${errorMsg}
-\`\`\`
-` : ''}
+${errorMsg ? `Run / Compile Error Output:\n\`\`\`\n${errorMsg}\n\`\`\`\n` : ''}
 Student's Message/Question:
 ${userMessage || 'I am stuck. Can you explain the bug in my code or suggest how to optimize it?'}
 

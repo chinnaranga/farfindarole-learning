@@ -1,6 +1,3 @@
-export const runtime = 'edge';
-export const runtime = 'edge';
-
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -302,4 +299,97 @@ export default function CourseFinalPage() {
           <div>
             <div className="flex justify-between text-xs font-bold text-slate-600 mb-2">
               <span>{completedCount} of {lessons.length} lessons completed</span>
-              <span>{overallProgress}
+              <span>{overallProgress}%</span>
+            </div>
+            <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-red-500 to-indigo-500 transition-all duration-700 rounded-full"
+                style={{ width: `${overallProgress}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Requirements checklist */}
+          <div className="space-y-3">
+            <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Graduation Requirements</h3>
+
+            {/* Lesson completion */}
+            <div className={`flex items-center gap-3 p-3.5 rounded-2xl border ${allLessonsCompleted ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${allLessonsCompleted ? 'bg-emerald-500' : 'bg-slate-200'}`}>
+                {allLessonsCompleted ? <CheckCircle2 className="w-4 h-4 text-white" /> : <BookOpen className="w-4 h-4 text-slate-500" />}
+              </div>
+              <div className="flex-1">
+                <p className={`text-xs font-bold ${allLessonsCompleted ? 'text-emerald-800' : 'text-slate-700'}`}>
+                  Complete All Lessons
+                </p>
+                <p className="text-[10px] text-slate-500">{completedCount} / {lessons.length} completed</p>
+              </div>
+              {!allLessonsCompleted && (
+                <Link href={`/courses/${courseId}`} className="text-[10px] font-bold text-red-600 hover:underline">
+                  Resume →
+                </Link>
+              )}
+            </div>
+
+            {/* Quiz requirements */}
+            {gradedQuizzes.map(quiz => (
+              <div key={quiz.id} className={`flex items-center gap-3 p-3.5 rounded-2xl border ${passedQuizzes.has(quiz.id) ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${passedQuizzes.has(quiz.id) ? 'bg-emerald-500' : 'bg-slate-200'}`}>
+                  {passedQuizzes.has(quiz.id)
+                    ? <CheckCircle2 className="w-4 h-4 text-white" />
+                    : <Lock className="w-4 h-4 text-slate-500" />
+                  }
+                </div>
+                <div className="flex-1">
+                  <p className={`text-xs font-bold ${passedQuizzes.has(quiz.id) ? 'text-emerald-800' : 'text-slate-700'}`}>
+                    Pass: {quiz.title}
+                  </p>
+                  <p className="text-[10px] text-slate-500">
+                    {quiz.is_final ? 'Final Exam' : 'Graded Assessment'} · {quiz.passing_score_percent || 70}% required
+                  </p>
+                </div>
+                {passedQuizzes.has(quiz.id) && (
+                  <Star className="w-4 h-4 text-emerald-500 fill-emerald-500" />
+                )}
+              </div>
+            ))}
+
+            {gradedQuizzes.length === 0 && (
+              <div className="flex items-center gap-3 p-3.5 rounded-2xl border bg-emerald-50 border-emerald-200">
+                <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4 text-white" />
+                </div>
+                <p className="text-xs font-bold text-emerald-800">No graded assessments required</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Quick Links */}
+        <div className="grid grid-cols-2 gap-4">
+          <Link href={`/courses/${courseId}`} className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-red-300 hover:bg-red-50/30 transition flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
+              <BookOpen className="w-5 h-5 text-red-600" />
+            </div>
+            <div>
+              <p className="text-xs font-black text-slate-800">Course Overview</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">Review all modules</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 ml-auto group-hover:text-red-500 transition" />
+          </Link>
+          <Link href="/courses" className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-indigo-300 hover:bg-indigo-50/30 transition flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+              <Trophy className="w-5 h-5 text-indigo-600" />
+            </div>
+            <div>
+              <p className="text-xs font-black text-slate-800">Explore More</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">Find another course</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-400 ml-auto group-hover:text-indigo-500 transition" />
+          </Link>
+        </div>
+
+      </div>
+    </div>
+  )
+}

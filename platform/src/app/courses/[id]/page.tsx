@@ -1,6 +1,3 @@
-export const runtime = 'edge';
-export const runtime = 'edge';
-
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -294,8 +291,7 @@ export default function CourseDetailPage() {
       if (res.ok) {
         const data = await res.json()
         if (data.success && data.text) {
-          const lines = data.text.split('
-').filter((l: string) => l.trim().length > 0)
+          const lines = data.text.split('\n').filter((l: string) => l.trim().length > 0)
           setGeneratedStudyPlan(lines.slice(0, 4))
           setStudyPlanLoading(false)
           return
@@ -662,4 +658,122 @@ export default function CourseDetailPage() {
                 </svg>
                 <div className="absolute flex flex-col items-center">
                   <span className="text-2xl font-black text-slate-900 leading-none">
-                    {Math.round((completedCount / (lessons.length || 1)) * 100)}
+                    {Math.round((completedCount / (lessons.length || 1)) * 100)}%
+                  </span>
+                  <span className="text-[8px] text-slate-450 font-extrabold uppercase tracking-widest mt-1">Milestones</span>
+                </div>
+              </div>
+
+              <div className="w-full space-y-2.5 text-xs text-left border-t border-slate-100 pt-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 font-semibold">Total Modules</span>
+                  <span className="font-mono font-bold text-slate-800">{lessons.length}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 font-semibold">Duration Logged</span>
+                  <span className="font-mono font-bold text-slate-800">{totalDuration} mins</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 font-semibold">Enrolled User</span>
+                  <span className="font-bold text-slate-650 max-w-[140px] truncate">{userEmail}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* LinkedIn & Credentials Info Widget */}
+            <div className="glass p-5 rounded-3xl bg-white border border-slate-200 shadow-sm flex flex-col">
+              <div className="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+                <Award className="w-4.5 h-4.5 text-amber-550" />
+                <h3 className="text-xs font-black uppercase tracking-wider text-slate-850">Graduate Rewards</h3>
+              </div>
+              <p className="text-slate-500 text-xs leading-relaxed mb-4">
+                Upon completing this course path, you will lock down a verifiable graduation credential linkable to database receipts.
+              </p>
+              <div className="space-y-3">
+                <div className="flex items-start gap-2 text-xs text-slate-650 font-semibold">
+                  <Check className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <span>LinkedIn profile share certificate tag</span>
+                </div>
+                <div className="flex items-start gap-2 text-xs text-slate-655 font-semibold">
+                  <Check className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <span>Resume cryptographic verification hash ID</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* ========================================================================= */}
+      {/* SUBSCRIPTION PRO-LOCK UPGRADE MODAL OVERLAY */}
+      {/* ========================================================================= */}
+      {showUnlockModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white max-w-md w-full rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-2xl relative flex flex-col items-center text-center gap-6 overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-[30px] pointer-events-none" />
+            
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600">
+              <Crown className="w-8 h-8 fill-current" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-lg font-black text-slate-905">
+                {courseTier === 'Advanced' ? 'Advanced Architect Required' : courseTier === 'Pro' ? 'Pro Builder Required' : 'Basic Plan Required'}
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
+                This course/module is locked under the <span className="font-bold text-red-600 uppercase">{courseTier}</span> tier. Upgrade your subscription to unlock full access.
+              </p>
+            </div>
+
+            {/* Pro Locks Features checklist */}
+            <div className="w-full text-left space-y-2.5 bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs">
+              <div className="flex items-start gap-2 text-slate-650 font-semibold">
+                <Check className="w-4 h-4 text-amber-500 fill-current flex-shrink-0 mt-0.5" />
+                <span>Access all courses locked in this tier</span>
+              </div>
+              <div className="flex items-start gap-2 text-slate-655 font-semibold">
+                <Check className="w-4 h-4 text-amber-500 fill-current flex-shrink-0 mt-0.5" />
+                <span>Unlimited interactive checkpoints and quizzes</span>
+              </div>
+              <div className="flex items-start gap-2 text-slate-655 font-semibold">
+                <Check className="w-4 h-4 text-amber-500 fill-current flex-shrink-0 mt-0.5" />
+                <span>Verifiable course completion certificates</span>
+              </div>
+            </div>
+
+            <div className="flex gap-3 w-full">
+              <Link
+                href="/pricing"
+                className="flex-1 text-center bg-gradient-to-r from-red-600 to-amber-500 hover:from-red-750 hover:to-amber-600 text-white font-bold text-xs py-3 rounded-xl transition shadow-md uppercase tracking-wider"
+              >
+                Upgrade Plan
+              </Link>
+              <button
+                onClick={() => {
+                  setShowUnlockModal(false)
+                  setSelectedLockedLesson(null)
+                }}
+                className="flex-1 bg-white hover:bg-slate-50 border border-slate-250 text-slate-500 font-bold text-xs py-3 rounded-xl transition cursor-pointer"
+              >
+                Go Back
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Course Terms & Conditions Modal Overlay */}
+      <PolicyModal
+        isOpen={showCourseConsentModal}
+        policyType="course"
+        isUndismissible={true}
+        showAcceptDecline={true}
+        onAccept={handleAcceptCourseTerms}
+        onDecline={handleDeclineCourseTerms}
+      />
+    </div>
+  )
+}

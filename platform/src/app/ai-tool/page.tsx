@@ -1,6 +1,3 @@
-export const runtime = 'edge';
-export const runtime = 'edge';
-
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -334,8 +331,7 @@ Format: List out cards matching 'Card 1 Front: [Concept] / Card 1 Back: [Definit
       if (res.ok && data.success) {
         // Stream text output by simulated chunking for visual polish
         const fullText = data.text || ''
-        const textChunks = fullText.split('
-')
+        const textChunks = fullText.split('\n')
         let chunkIndex = 0
         
         const streamInterval = setInterval(() => {
@@ -347,8 +343,7 @@ Format: List out cards matching 'Card 1 Front: [Concept] / Card 1 Back: [Definit
             savePromptToHistory()
             return
           }
-          setGeneratedText(prev => prev + textChunks[chunkIndex] + '
-')
+          setGeneratedText(prev => prev + textChunks[chunkIndex] + '\n')
           chunkIndex++
         }, 15)
       } else {
@@ -506,8 +501,7 @@ Format: List out cards matching 'Card 1 Front: [Concept] / Card 1 Back: [Definit
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
 
-    const lines = htmlContent.split('
-')
+    const lines = htmlContent.split('\n')
     const result: string[] = []
     let inList = false
     let inTable = false
@@ -522,8 +516,7 @@ Format: List out cards matching 'Card 1 Front: [Concept] / Card 1 Back: [Definit
       if (line.trim().startsWith('```')) {
         if (inCode) {
           inCode = false;
-          result.push(`<pre class="my-4 p-4 rounded-xl bg-slate-50 text-slate-800 overflow-x-auto text-xs font-mono border border-slate-200"><code class="block whitespace-pre">${codeBlockContent.join('
-')}</code></pre>`)
+          result.push(`<pre class="my-4 p-4 rounded-xl bg-slate-50 text-slate-800 overflow-x-auto text-xs font-mono border border-slate-200"><code class="block whitespace-pre">${codeBlockContent.join('\n')}</code></pre>`)
           codeBlockContent = []
         } else {
           inCode = true
@@ -604,8 +597,7 @@ Format: List out cards matching 'Card 1 Front: [Concept] / Card 1 Back: [Definit
     return (
       <div 
         className="font-sans text-slate-800 space-y-2 prose max-w-none"
-        dangerouslySetInnerHTML={{ __html: result.join('
-') }}
+        dangerouslySetInnerHTML={{ __html: result.join('\n') }}
       />
     )
   }
@@ -898,4 +890,302 @@ Format: List out cards matching 'Card 1 Front: [Concept] / Card 1 Back: [Definit
                     <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-1.5">
                       <div 
                         className={`h-full rounded-full transition-all duration-300 ${quotaUsed >= quotaLimit ? 'bg-red-500' : 'bg-rose-500'}`}
-                        style={{ width: `${Math.min(100, (quotaUsed / quotaLimit) * 100)}
+                        style={{ width: `${Math.min(100, (quotaUsed / quotaLimit) * 100)}%` }}
+                      />
+                    </div>
+                  )}
+                  {subscriptionTier === 'free' && (
+                    <div className="mt-3 bg-rose-50/55 border border-rose-100 p-3 rounded-xl flex items-start gap-2">
+                      <Crown className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <p className="text-[10px] text-slate-550 leading-normal">
+                        Upgrade to **Pro Builder** to unlock unlimited curriculum outlines, notes compilations, and PDF exports.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Workspace Preview */}
+              <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden flex flex-col min-h-[480px]">
+                
+                {/* Output Toolbar */}
+                <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+                  
+                  {/* Mode Toggles */}
+                  <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <button
+                      onClick={() => setViewMode('preview')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer ${
+                        viewMode === 'preview'
+                          ? 'bg-white text-slate-800 shadow-xs'
+                          : 'text-slate-500 hover:text-slate-800'
+                      }`}
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      Preview
+                    </button>
+                    
+                    <button
+                      onClick={() => setViewMode('source')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer ${
+                        viewMode === 'source'
+                          ? 'bg-white text-slate-800 shadow-xs'
+                          : 'text-slate-500 hover:text-slate-800'
+                      }`}
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      Source
+                    </button>
+                  </div>
+
+                  {/* Document Name input */}
+                  <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+                    <span className="hidden sm:inline">File name:</span>
+                    <input
+                      type="text"
+                      value={filename}
+                      onChange={(e) => setFilename(e.target.value)}
+                      className="px-2 py-1 rounded border border-slate-200 bg-white font-mono text-[11px] text-slate-800 focus:outline-none w-[180px] sm:w-[240px]"
+                    />
+                  </div>
+
+                  {/* Copy / Download / Save Actions */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleCopy}
+                      disabled={!generatedText}
+                      title="Copy to clipboard"
+                      className="p-2 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-655 disabled:opacity-40 disabled:hover:bg-white cursor-pointer select-none"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                    
+                    <button
+                      onClick={handleDownload}
+                      disabled={!generatedText}
+                      title="Download Markdown"
+                      className="p-2 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-655 disabled:opacity-40 disabled:hover:bg-white cursor-pointer select-none"
+                    >
+                      <Download className="w-4 h-4" />
+                    </button>
+                    
+                    <button
+                      onClick={handleSaveToWorkspace}
+                      disabled={!generatedText}
+                      className="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer select-none shadow-xs"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      Save
+                    </button>
+                  </div>
+                </div>
+
+                {/* Save status notification overlay banner */}
+                {saveStatus.type !== 'idle' && (
+                  <div className={`px-4 py-2 text-xs flex items-center gap-2 ${
+                    saveStatus.type === 'success' ? 'bg-emerald-50 text-emerald-700 border-b border-emerald-100' : 'bg-red-50 text-red-700 border-b border-red-100'
+                  }`}>
+                    {saveStatus.type === 'success' ? <Check className="w-4 h-4 flex-shrink-0" /> : <AlertCircle className="w-4 h-4 flex-shrink-0" />}
+                    <span>{saveStatus.message}</span>
+                    <button onClick={() => setSaveStatus({ type: 'idle', message: '' })} className="ml-auto text-current opacity-70 hover:opacity-100">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Workspace Output Content */}
+                <div className="flex-1 p-5 relative overflow-y-auto max-h-[500px]">
+                  {viewMode === 'preview' ? (
+                    renderMarkdown(generatedText)
+                  ) : (
+                    <textarea
+                      value={generatedText}
+                      onChange={(e) => setGeneratedText(e.target.value)}
+                      placeholder="Markdown content will output here. You can edit directly in this workspace..."
+                      className="w-full h-full min-h-[380px] bg-slate-50/50 border border-slate-150 rounded-xl p-4 font-mono text-xs focus:outline-none focus:ring-0 text-slate-800 resize-none"
+                    />
+                  )}
+
+                  {generating && (
+                    <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex flex-col items-center justify-center gap-2">
+                      <Loader2 className="w-7 h-7 text-rose-500 animate-spin" />
+                      <span className="text-xs font-bold text-slate-600 animate-pulse">
+                        Drafting workspace modules...
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 2: Saved Documents */}
+        {activeTab === 'saved' && (
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden p-6 space-y-4">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">
+                Workspace Documents
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Real compiled learning materials saved in your local workspace folder. You can load them back into the generator or download directly.
+              </p>
+            </div>
+
+            {savedDocs.length === 0 ? (
+              <div className="border border-dashed border-slate-200 p-12 text-center rounded-2xl flex flex-col items-center gap-3">
+                <FileText className="w-8 h-8 text-slate-350" />
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-700">No documents saved yet</h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Generate learning assets above and click Save to store them in your workspace.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {savedDocs.map((doc, idx) => (
+                  <div 
+                    key={idx}
+                    className="p-4 rounded-xl border border-slate-200 hover:border-slate-350 bg-slate-50/50 flex flex-col justify-between gap-3 group transition"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-2.5">
+                        <div className="p-2 rounded-lg bg-rose-50 text-rose-500 mt-0.5">
+                          <FileText className="w-4.5 h-4.5" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-800 font-mono break-all leading-normal">
+                            {doc.filename}
+                          </h4>
+                          <span className="text-[10px] text-slate-400 block mt-1">
+                            Updated: {new Date(doc.updatedAt).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Delete doc button */}
+                      <button
+                        onClick={() => handleDeleteSavedDoc(doc.filename)}
+                        title="Delete Document"
+                        className="p-1.5 rounded-lg border border-slate-200 hover:border-red-200 hover:bg-red-50 hover:text-red-500 text-slate-400 transition cursor-pointer select-none"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-slate-200/50 pt-3">
+                      <span className="text-[10px] font-semibold text-slate-500 font-mono">
+                        {(doc.size / 1024).toFixed(2)} KB
+                      </span>
+                      
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            const blob = new Blob([doc.content], { type: 'text/markdown' })
+                            const link = document.createElement('a')
+                            link.href = URL.createObjectURL(blob)
+                            link.download = doc.filename
+                            link.click()
+                          }}
+                          className="px-2.5 py-1.5 rounded bg-white border border-slate-250 text-[11px] font-bold text-slate-655 hover:bg-slate-50 select-none cursor-pointer"
+                        >
+                          Download
+                        </button>
+                        
+                        <button
+                          onClick={() => handleLoadSavedDoc(doc)}
+                          className="px-2.5 py-1.5 rounded bg-slate-900 hover:bg-slate-800 text-[11px] font-bold text-white flex items-center gap-1 cursor-pointer select-none shadow-xs"
+                        >
+                          Load Document
+                          <ChevronRight className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 3: Prompt History */}
+        {activeTab === 'history' && (
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden p-6 space-y-4">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">
+                AI Generation History
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                A personal database log of your past inputs, parameters, and generated outlines.
+              </p>
+            </div>
+
+            {historyList.length === 0 ? (
+              <div className="border border-dashed border-slate-200 p-12 text-center rounded-2xl flex flex-col items-center gap-3">
+                <History className="w-8 h-8 text-slate-350" />
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-700">History is empty</h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Your AI generation runs will be listed here after you create new assets.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {historyList.map((item, idx) => (
+                  <div key={idx} className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 first:pt-0 last:pb-0">
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-bold text-slate-800">
+                          {item.title}
+                        </span>
+                        <span className="px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold text-slate-600 uppercase">
+                          {item.generatorType}
+                        </span>
+                        <span className="px-2 py-0.5 rounded bg-rose-50 text-[10px] font-bold text-rose-600 uppercase font-mono">
+                          {item.model}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-450 font-mono line-clamp-1 max-w-[500px]">
+                        {item.promptText}
+                      </p>
+                      <span className="text-[10px] text-slate-400 block">
+                        Logged: {new Date(item.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-end md:self-auto">
+                      <button
+                        onClick={() => {
+                          setGenerator(item.generatorType)
+                          setModel(item.model)
+                          // Parse simple topic back out if possible from the history title
+                          const splitTitle = item.title.split(' - ')
+                          if (splitTitle.length > 1) {
+                            setTopic(splitTitle.slice(1).join(' - '))
+                          }
+                          setActiveTab('generator')
+                        }}
+                        className="px-2.5 py-1.5 rounded border border-slate-200 hover:border-slate-350 bg-white text-xs font-bold text-slate-655 hover:bg-slate-50 flex items-center gap-1 select-none cursor-pointer"
+                      >
+                        Restore Settings
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteHistoryItem(item.id)}
+                        className="p-1.5 rounded-lg border border-slate-200 hover:border-red-200 hover:bg-red-50 hover:text-red-500 text-slate-400 transition cursor-pointer select-none"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

@@ -1,6 +1,3 @@
-export const runtime = 'edge';
-export const runtime = 'edge';
-
 'use client'
 
 import { useEffect, useState } from 'react'

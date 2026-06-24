@@ -1,6 +1,3 @@
-export const runtime = 'edge';
-export const runtime = 'edge';
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -40,17 +37,10 @@ export default function AdminCreateChallengePage() {
   const [memoryLimitKb, setMemoryLimitKb] = useState(64000);
 
   // Code Templates
-  const [jsStub, setJsStub] = useState('function solution() {
-  // Write your code here
-}');
-  const [pyStub, setPyStub] = useState('def solution():
-    # Write your code here
-    pass');
-  const [jsSol, setJsSol] = useState('function solution() {
-  return true;
-}');
-  const [pySol, setPySol] = useState('def solution():
-    return True');
+  const [jsStub, setJsStub] = useState('function solution() {\n  // Write your code here\n}');
+  const [pyStub, setPyStub] = useState('def solution():\n    # Write your code here\n    pass');
+  const [jsSol, setJsSol] = useState('function solution() {\n  return true;\n}');
+  const [pySol, setPySol] = useState('def solution():\n    return True');
 
   // Test Cases
   const [testCases, setTestCases] = useState<TestCaseStub[]>([
@@ -131,9 +121,7 @@ export default function AdminCreateChallengePage() {
           };
         });
       } catch (err: any) {
-        alert('Invalid Test Case format. Please ensure input arguments are formatted as valid JSON arrays (e.g. [[1,2], 3]) and outputs are valid JSON values.
-
-Error: ' + err.message);
+        alert('Invalid Test Case format. Please ensure input arguments are formatted as valid JSON arrays (e.g. [[1,2], 3]) and outputs are valid JSON values.\n\nError: ' + err.message);
         return;
       }
 

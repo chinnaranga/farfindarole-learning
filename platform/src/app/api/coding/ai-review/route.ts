@@ -1,6 +1,3 @@
-export const runtime = 'edge';
-export const runtime = 'edge';
-
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { generateGemini } from '@/ai/gemini';

@@ -1,6 +1,3 @@
-export const runtime = 'edge';
-export const runtime = 'edge';
-
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -375,7 +372,7 @@ export default function UserBillingPage() {
                 <div className="flex flex-col items-center justify-center p-8 bg-slate-950/40 rounded-2xl text-center border border-slate-800/40">
                   <Award className="w-10 h-10 text-slate-700 mb-2" />
                   <p className="text-slate-400 font-medium text-sm">No certificates earned yet</p>
-                  <p className="text-xs text-slate-500 mt-1">Complete a course syllabus to 1000 unlock a PDF credential.</p>
+                  <p className="text-xs text-slate-500 mt-1">Complete a course syllabus to 100% to unlock a PDF credential.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -434,4 +431,97 @@ export default function UserBillingPage() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-slate-200 mb-1">Where is my certificate?</h4>
-                  <p className="text-slate-400">Certificates are automatically compiled as verifiable PDFs once you reach 100
+                  <p className="text-slate-400">Certificates are automatically compiled as verifiable PDFs once you reach 100% progress in any course dashboard.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Claim Refund Modal Form */}
+      {showRefundModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl animate-in fade-in-50 zoom-in-95">
+            
+            <div className="px-6 py-4 bg-gradient-to-r from-red-950/20 to-slate-900 border-b border-slate-800 flex items-center justify-between">
+              <h3 className="font-bold text-white flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-red-500" /> Request Transaction Refund
+              </h3>
+              <button 
+                onClick={() => setShowRefundModal(false)}
+                className="text-slate-500 hover:text-white transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleRequestRefund} className="p-6 space-y-4">
+              {refundSuccessMsg ? (
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-emerald-400">{refundSuccessMsg}</p>
+                </div>
+              ) : (
+                <>
+                  <div className="p-4 bg-slate-950 rounded-2xl text-xs space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Invoice Number:</span>
+                      <span className="font-semibold text-slate-300">{selectedInvoice?.invoice_number}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Total Billed Amount:</span>
+                      <span className="font-bold text-white">₹{Number(selectedInvoice?.total).toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-2">
+                      REASON FOR REFUND REQUEST
+                    </label>
+                    <textarea
+                      required
+                      rows={3}
+                      value={refundReason}
+                      onChange={(e) => setRefundReason(e.target.value)}
+                      placeholder="Please briefly explain why you are requesting a refund..."
+                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 focus:border-red-500 rounded-2xl text-sm text-white placeholder-slate-600 focus:outline-none transition duration-150"
+                    />
+                  </div>
+
+                  <div className="flex gap-3 justify-end pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowRefundModal(false)}
+                      className="px-4 py-2 text-sm font-semibold text-slate-400 hover:text-white transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={refunding}
+                      className="px-5 py-2.5 bg-red-600 hover:bg-red-700 disabled:bg-red-800 text-white text-sm font-bold rounded-xl flex items-center gap-2 transition"
+                    >
+                      {refunding ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 animate-spin" /> Submitting...
+                        </>
+                      ) : (
+                        'Submit Request'
+                      )}
+                    </button>
+                  </div>
+                </>
+              )}
+            </form>
+
+          </div>
+        </div>
+      )}
+
+    </div>
+  )
+}

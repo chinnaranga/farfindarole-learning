@@ -1,6 +1,3 @@
-export const runtime = 'edge';
-export const runtime = 'edge';
-
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserProgress } from '@/lib/server-store'
 
