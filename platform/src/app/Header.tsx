@@ -9,7 +9,7 @@ import { supabase, getUserSubscription } from '@/lib/supabase'
 export default function Header() {
   const pathname = usePathname()
   const router = useRouter()
-  
+
   const [user, setUser] = useState<any>(null)
   const [subscription, setSubscription] = useState<any>(null)
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -101,11 +101,11 @@ export default function Header() {
     } catch (e) {
       console.error('Failed to logout via Supabase Auth:', e)
     }
-    
+
     setUser(null)
     setSubscription(null)
     setDropdownOpen(false)
-    
+
     router.push('/')
   }
 
@@ -125,38 +125,17 @@ export default function Header() {
     return 'US'
   }
 
-  const isProPlan = (planName?: string) => {
-    if (!planName) return false
-    const lower = planName.toLowerCase()
-    return lower === 'student pro' || lower === 'pro' || lower === 'advanced'
-  }
-
   const renderPlanBadge = (plan?: string) => {
-    const normPlan = (plan || 'Free').toLowerCase()
-    if (normPlan === 'advanced') {
+    if (user?.role === 'admin') {
       return (
-        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black bg-gradient-to-r from-indigo-500 to-purple-600 text-white border border-indigo-400 shadow-sm uppercase tracking-widest leading-none">
-          Advanced
-        </span>
-      )
-    }
-    if (normPlan === 'student pro' || normPlan === 'pro') {
-      return (
-        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black bg-gradient-to-r from-amber-500 to-red-500 text-white border border-amber-400 shadow-sm uppercase tracking-widest leading-none animate-pulse">
-          Student Pro
-        </span>
-      )
-    }
-    if (normPlan === 'basic') {
-      return (
-        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-50 border border-blue-200 text-blue-700 uppercase tracking-wider leading-none">
-          Basic
+        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black bg-slate-900 text-white border border-slate-700 uppercase tracking-widest leading-none">
+          Admin
         </span>
       )
     }
     return (
-      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 border border-slate-200 text-slate-700 uppercase tracking-wider leading-none">
-        Free
+      <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black bg-brand-primary text-white border border-brand-primary/25 shadow-sm uppercase tracking-wider leading-none">
+        Enterprise Learner
       </span>
     )
   }
@@ -164,74 +143,68 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        
+
         {/* Logo */}
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="px-2.5 py-1 rounded bg-red-600 flex items-center justify-center font-bold text-white shadow-sm group-hover:scale-105 transition-transform text-sm tracking-tight uppercase">
+        <div className="flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-2 group whitespace-nowrap">
+            <div className="px-2.5 py-1 rounded bg-brand-primary flex items-center justify-center font-bold text-white shadow-sm group-hover:scale-105 transition-transform text-sm tracking-tight uppercase">
               far
             </div>
             <span className="font-extrabold text-lg tracking-tight text-slate-900">
-              FindA<span className="text-red-605">ROLE.</span>
-              <span className="text-slate-450 font-normal text-sm ml-1">Learn</span>
+              FindA<span className="text-brand-secondary">ROLE.</span>
+              <span className="text-slate-550 font-normal text-sm ml-1">Learn</span>
             </span>
           </Link>
-          
+
           {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6">
-            <Link 
-              href="/courses" 
-              className={`text-xs font-bold uppercase tracking-wider transition-colors ${
-                pathname.startsWith('/courses') ? 'text-red-655 font-black' : 'text-slate-550 hover:text-slate-900'
-              }`}
+          <nav className="hidden md:flex items-center gap-3">
+            <Link
+              href="/courses"
+              className={`text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${pathname.startsWith('/courses') ? 'text-brand-secondary font-black' : 'text-slate-550 hover:text-slate-900'
+                }`}
             >
               Explore Courses
             </Link>
-            
+
             {user && user.role !== 'admin' && (
               <>
-                <Link 
-                  href="/dashboard" 
-                  className={`text-xs font-bold uppercase tracking-wider transition-colors ${
-                    pathname === '/dashboard' ? 'text-red-655 font-black' : 'text-slate-550 hover:text-slate-900'
-                  }`}
+                <Link
+                  href="/dashboard"
+                  className={`text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${pathname === '/dashboard' ? 'text-brand-secondary font-black' : 'text-slate-550 hover:text-slate-900'
+                    }`}
                 >
                   My Dashboard
                 </Link>
-                <Link 
-                  href="/dashboard/coding" 
-                  className={`text-xs font-bold uppercase tracking-wider transition-colors ${
-                    pathname.startsWith('/dashboard/coding') ? 'text-red-655 font-black' : 'text-slate-550 hover:text-slate-900'
-                  }`}
+                <Link
+                  href="/dashboard/coding"
+                  className={`text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${pathname.startsWith('/dashboard/coding') ? 'text-brand-secondary font-black' : 'text-slate-550 hover:text-slate-900'
+                    }`}
                 >
                   Coding Arena
                 </Link>
-                <Link 
-                  href="/dashboard/contests" 
-                  className={`text-xs font-bold uppercase tracking-wider transition-colors ${
-                    pathname.startsWith('/dashboard/contests') ? 'text-red-655 font-black' : 'text-slate-550 hover:text-slate-900'
-                  }`}
+                <Link
+                  href="/dashboard/contests"
+                  className={`text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${pathname.startsWith('/dashboard/contests') ? 'text-brand-secondary font-black' : 'text-slate-550 hover:text-slate-900'
+                    }`}
                 >
                   Contests
                 </Link>
               </>
             )}
-            
-            <Link 
-              href="/pricing" 
-              className={`text-xs font-bold uppercase tracking-wider transition-colors ${
-                pathname === '/pricing' ? 'text-red-655 font-black' : 'text-slate-550 hover:text-slate-900'
-              }`}
+
+            <Link
+              href="/workforce"
+              className={`text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${pathname === '/workforce' ? 'text-brand-secondary font-black' : 'text-slate-550 hover:text-slate-900'
+                }`}
             >
-              Pricing Plans
+              Workforce Solutions
             </Link>
 
             {user && (
-              <Link 
-                href="/ai-tool" 
-                className={`text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1 ${
-                  pathname === '/ai-tool' ? 'text-red-655 font-black' : 'text-slate-550 hover:text-slate-900'
-                }`}
+              <Link
+                href="/ai-tool"
+                className={`text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors flex items-center gap-1 ${pathname === '/ai-tool' ? 'text-brand-secondary font-black' : 'text-slate-550 hover:text-slate-900'
+                  }`}
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-current" /> AI Content Tool
               </Link>
@@ -239,19 +212,17 @@ export default function Header() {
 
             {user && user.role === 'admin' && user.email === 'admin@farfindarole.com' && (
               <>
-                <Link 
-                  href="/admin" 
-                  className={`text-xs font-bold uppercase tracking-wider transition-colors ${
-                    pathname === '/admin' ? 'text-red-655 font-black' : 'text-slate-550 hover:text-slate-900'
-                  }`}
+                <Link
+                  href="/admin"
+                  className={`text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${pathname === '/admin' ? 'text-brand-secondary font-black' : 'text-slate-550 hover:text-slate-900'
+                    }`}
                 >
                   Admin Control
                 </Link>
-                <Link 
-                  href="/admin/coding" 
-                  className={`text-xs font-bold uppercase tracking-wider transition-colors ${
-                    pathname.startsWith('/admin/coding') ? 'text-red-655 font-black' : 'text-slate-550 hover:text-slate-900'
-                  }`}
+                <Link
+                  href="/admin/coding"
+                  className={`text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${pathname.startsWith('/admin/coding') ? 'text-brand-secondary font-black' : 'text-slate-550 hover:text-slate-900'
+                    }`}
                 >
                   Challenge Editor
                 </Link>
@@ -289,7 +260,7 @@ export default function Header() {
               {/* Dropdown Options */}
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-72 rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md p-2.5 shadow-2xl flex flex-col gap-2 z-50 animate-fadeIn">
-                  
+
                   {/* Section 1: User Info */}
                   <div className="flex items-center gap-3 p-2.5 bg-slate-50/60 rounded-xl border border-slate-100/50">
                     {user.avatar_url ? (
@@ -313,37 +284,23 @@ export default function Header() {
                     <Link
                       href="/dashboard"
                       onClick={() => setDropdownOpen(false)}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-650 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
                     >
                       My Dashboard
                     </Link>
                     <Link
                       href="/courses"
                       onClick={() => setDropdownOpen(false)}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-650 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
                     >
                       My Courses
                     </Link>
                     <Link
-                      href="/dashboard?tab=certificates"
+                      href="/dashboard/billing"
                       onClick={() => setDropdownOpen(false)}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-650 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
                     >
-                      My Certificates
-                    </Link>
-                    <Link
-                      href="/dashboard?tab=progress"
-                      onClick={() => setDropdownOpen(false)}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-650 hover:text-slate-900 hover:bg-slate-50 transition-colors"
-                    >
-                      Learning Progress
-                    </Link>
-                    <Link
-                      href="/dashboard?tab=saved"
-                      onClick={() => setDropdownOpen(false)}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-650 hover:text-slate-900 hover:bg-slate-50 transition-colors"
-                    >
-                      Saved Content
+                      Credentials & Sponsorship
                     </Link>
                   </div>
 
@@ -354,60 +311,39 @@ export default function Header() {
                     <Link
                       href="/settings"
                       onClick={() => setDropdownOpen(false)}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-655 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
                     >
                       Account Settings
                     </Link>
                     <Link
-                      href="/pricing"
-                      onClick={() => setDropdownOpen(false)}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-655 hover:text-slate-900 hover:bg-slate-50 transition-colors"
-                    >
-                      Billing & Subscription
-                    </Link>
-                    <Link
                       href="/settings/notifications"
                       onClick={() => setDropdownOpen(false)}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-655 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
                     >
                       Notifications
                     </Link>
-                    <Link
-                      href="/settings/privacy"
-                      onClick={() => setDropdownOpen(false)}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-655 hover:text-slate-900 hover:bg-slate-50 transition-colors"
-                    >
-                      Privacy Settings
-                    </Link>
-                    <Link
-                      href="/settings/security"
-                      onClick={() => setDropdownOpen(false)}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-655 hover:text-slate-900 hover:bg-slate-50 transition-colors"
-                    >
-                      Security
-                    </Link>
                   </div>
 
-                  {/* Section 4: Pro Features */}
-                  {isProPlan(subscription?.subscription_plan) && (
+                  {/* Section 4: Enterprise Tools */}
+                  {user.role !== 'admin' && (
                     <>
                       <div className="h-px bg-slate-100 my-0.5" />
                       <div className="flex flex-col gap-0.5">
-                        <div className="px-2.5 py-1 text-[8px] font-black text-amber-600 uppercase tracking-widest leading-none flex items-center gap-1">
-                          <Crown className="w-2.5 h-2.5 fill-current" /> Student Pro Features
+                        <div className="px-2.5 py-1 text-[8px] font-black text-brand-secondary uppercase tracking-widest leading-none flex items-center gap-1">
+                          <Sparkles className="w-2.5 h-2.5 fill-current" /> Enterprise Tools
                         </div>
                         <Link
                           href="/courses"
                           onClick={() => setDropdownOpen(false)}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-655 hover:text-slate-900 hover:bg-amber-50/20 transition-colors flex items-center gap-1.5"
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
                         >
                           <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-current" />
-                          <span>AI Mentor</span>
+                          <span>AI Study Mentor</span>
                         </Link>
                         <Link
                           href="/courses?tab=roadmap"
                           onClick={() => setDropdownOpen(false)}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-655 hover:text-slate-900 hover:bg-amber-50/20 transition-colors flex items-center gap-1.5"
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
                         >
                           <Star className="w-3.5 h-3.5 text-indigo-500 fill-current" />
                           <span>Career Roadmap</span>
@@ -415,18 +351,10 @@ export default function Header() {
                         <Link
                           href="/dashboard?tab=interviews"
                           onClick={() => setDropdownOpen(false)}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-655 hover:text-slate-900 hover:bg-amber-50/20 transition-colors flex items-center gap-1.5"
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
                         >
-                          <Zap className="w-3.5 h-3.5 text-red-500 fill-current animate-pulse" />
+                          <Zap className="w-3.5 h-3.5 text-red-500 fill-current" />
                           <span>Mock Interviews</span>
-                        </Link>
-                        <Link
-                          href="/courses?tab=resources"
-                          onClick={() => setDropdownOpen(false)}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-655 hover:text-slate-900 hover:bg-amber-50/20 transition-colors flex items-center gap-1.5"
-                        >
-                          <Crown className="w-3.5 h-3.5 text-amber-500 fill-current" />
-                          <span>Premium Resources</span>
                         </Link>
                       </div>
                     </>
@@ -456,7 +384,7 @@ export default function Header() {
               </Link>
               <Link
                 href="/signup"
-                className="bg-red-600 hover:bg-red-750 text-white font-bold text-xs px-4.5 py-2.5 rounded-xl transition shadow-sm select-none"
+                className="bg-brand-primary hover:bg-brand-primary/95 text-white font-bold text-xs px-4.5 py-2.5 rounded-xl transition shadow-sm select-none"
               >
                 Sign Up
               </Link>

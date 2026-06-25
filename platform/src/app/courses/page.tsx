@@ -35,15 +35,18 @@ const TIER_RANK: Record<string, number> = { 'Free': 0, 'Basic': 1, 'Pro': 2, 'Ad
 const PLAN_RANK: Record<string, number> = { 'free': 0, 'basic': 1, 'pro': 2, 'advanced': 3 }
 
 function isCourseLocked(courseTier: string, plan: string, role: string): boolean {
-  if (role === 'admin') return false
-  return (TIER_RANK[courseTier] ?? 0) > (PLAN_RANK[plan] ?? 0)
+  return false
 }
 
 function getRequiredPlan(courseTier: string): string {
-  if (courseTier === 'Advanced') return 'Advanced'
-  if (courseTier === 'Pro') return 'Pro'
-  if (courseTier === 'Basic') return 'Basic'
   return 'Free'
+}
+
+const getCourseBadgeLabel = (tier: string) => {
+  if (tier === 'Advanced') return 'Specialization'
+  if (tier === 'Pro') return 'Certified'
+  if (tier === 'Basic') return 'Foundational'
+  return 'Open'
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -624,13 +627,8 @@ Provide concise, actionable career and learning advice. Be encouraging but speci
                   {userName ? `Welcome back, ${userName.split(' ')[0]}` : 'Your Learning Progress'}
                 </h2>
               </div>
-              <span className={`text-[10px] font-black px-3 py-1.5 rounded-full border uppercase tracking-wider ${
-                subscriptionPlan === 'advanced' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                subscriptionPlan === 'pro' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                subscriptionPlan === 'basic' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                'bg-slate-100 text-slate-600 border-slate-200'
-              }`}>
-                {subscriptionPlan} plan
+              <span className="text-[10px] font-black px-3 py-1.5 rounded-full border bg-brand-primary text-white border-brand-primary/10 uppercase tracking-wider">
+                Enterprise Sponsor: Active
               </span>
             </div>
 
@@ -759,15 +757,7 @@ Provide concise, actionable career and learning advice. Be encouraging but speci
                 <option value="completed">Most Completed</option>
               </select>
 
-              {/* Lock toggle */}
-              <button
-                onClick={() => setShowLockedCourses(v => !v)}
-                className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold border transition cursor-pointer ${
-                  showLockedCourses ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-red-50 border-red-200 text-red-700'
-                }`}
-              >
-                {showLockedCourses ? <><BookOpen className="w-3.5 h-3.5" /> Show All</> : <><Lock className="w-3.5 h-3.5" /> My Plan Only</>}
-              </button>
+              {/* Lock toggle removed */}
 
               <div className="flex-1" />
               <span className="text-[11px] text-slate-400 font-bold">
@@ -857,7 +847,7 @@ Provide concise, actionable career and learning advice. Be encouraging but speci
                         </div>
                         <div className="absolute top-3 right-3 z-20">
                           <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider ${tierColor(course.tier)}`}>
-                            {course.tier}
+                            {getCourseBadgeLabel(course.tier)}
                           </span>
                         </div>
 

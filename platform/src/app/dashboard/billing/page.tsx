@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { 
-  CreditCard, 
-  FileText, 
   Award, 
   ArrowLeft, 
   Download, 
@@ -12,30 +10,20 @@ import {
   HelpCircle,
   AlertCircle,
   CheckCircle2,
-  RefreshCw,
   Loader2,
-  ExternalLink,
-  ChevronRight,
-  TrendingUp,
-  Inbox
+  Sparkles,
+  Building,
+  ShieldAlert,
+  Calendar,
+  Lock,
+  Globe
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function UserBillingPage() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
-  const [subscription, setSubscription] = useState<any>(null)
-  const [invoices, setInvoices] = useState<any[]>([])
   const [certificates, setCertificates] = useState<any[]>([])
-  const [refunds, setRefunds] = useState<any[]>([])
-  const [emailSendingId, setEmailSendingId] = useState<string | null>(null)
-  
-  // Refund Request Form Modal States
-  const [showRefundModal, setShowRefundModal] = useState(false)
-  const [selectedInvoice, setSelectedInvoice] = useState<any>(null)
-  const [refundReason, setRefundReason] = useState('')
-  const [refunding, setRefunding] = useState(false)
-  const [refundSuccessMsg, setRefundSuccessMsg] = useState('')
 
   useEffect(() => {
     async function loadBillingData() {
@@ -47,38 +35,12 @@ export default function UserBillingPage() {
         }
         setUser(authUser)
 
-        // 1. Fetch Subscription
-        const { data: subData } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', authUser.id)
-          .maybeSingle()
-        setSubscription(subData)
-
-        // 2. Fetch Invoices
-        const { data: invData } = await supabase
-          .from('invoices')
-          .select('*')
-          .eq('user_id', authUser.email)
-          .order('created_at', { ascending: false })
-        setInvoices(invData || [])
-
-        // 3. Fetch Certificates (joined with course title)
+        // Fetch Certificates (joined with course title)
         const { data: certData } = await supabase
           .from('certificates')
           .select('*, courses(title)')
           .eq('user_id', authUser.email)
         setCertificates(certData || [])
-
-        // 4. Fetch Refunds
-        if (invData && invData.length > 0) {
-          const invoiceIds = invData.map((i: any) => i.id)
-          const { data: refData } = await supabase
-            .from('refunds')
-            .select('*')
-            .in('invoice_id', invoiceIds)
-          setRefunds(refData || [])
-        }
 
       } catch (err) {
         console.error('Error loading user billing:', err)
@@ -90,65 +52,11 @@ export default function UserBillingPage() {
     loadBillingData()
   }, [])
 
-  const handleOpenRefundModal = (invoice: any) => {
-    setSelectedInvoice(invoice)
-    setRefundReason('')
-    setRefundSuccessMsg('')
-    setShowRefundModal(true)
-  }
-
-  const handleRequestRefund = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedInvoice || !refundReason.trim()) return
-
-    setRefunding(true)
-    try {
-      const { data, error } = await supabase
-        .from('refunds')
-        .insert({
-          invoice_id: selectedInvoice.id,
-          amount: selectedInvoice.total,
-          status: 'pending',
-          reason: refundReason
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      setRefunds(prev => [data, ...prev])
-      setRefundSuccessMsg('Your refund request was submitted successfully! An administrator will review it shortly.')
-      
-      // Update local invoice state status temporarily to show requested
-      setInvoices(prev => prev.map(inv => {
-        if (inv.id === selectedInvoice.id) {
-          return { ...inv, refundRequested: true }
-        }
-        return inv
-      }))
-
-      setTimeout(() => {
-        setShowRefundModal(false)
-      }, 3000)
-    } catch (err: any) {
-      console.error('Refund insert error:', err)
-      alert(`Error submitting refund request: ${err.message}`)
-    } finally {
-      setRefunding(false)
-    }
-  }
-
-  const getRefundStatus = (invoiceId: string) => {
-    const matching = refunds.find(r => r.invoice_id === invoiceId)
-    if (!matching) return null
-    return matching.status // 'pending', 'approved', 'rejected'
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col items-center justify-center">
-        <Loader2 className="w-12 h-12 text-red-600 animate-spin mb-4" />
-        <p className="text-slate-500 font-medium">Synchronizing billing records...</p>
+        <Loader2 className="w-12 h-12 text-brand-primary animate-spin mb-4" />
+        <p className="text-slate-500 font-medium">Synchronizing credentials and licenses...</p>
       </div>
     )
   }
@@ -156,35 +64,28 @@ export default function UserBillingPage() {
   if (!user) {
     return (
       <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col items-center justify-center p-6 text-center">
-        <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
+        <AlertCircle className="w-16 h-16 text-brand-secondary mb-4" />
         <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-        <p className="text-slate-600 max-w-md mb-6">You must be logged in to view your billing details and invoices.</p>
-        <Link href="/login" className="px-6 py-3 bg-red-600 hover:bg-red-700 font-bold text-white rounded-xl transition duration-200">
+        <p className="text-slate-600 max-w-md mb-6">You must be logged in to view your credentials and licensing details.</p>
+        <Link href="/login" className="px-6 py-3 bg-brand-primary hover:bg-brand-primary/95 font-bold text-white rounded-xl transition duration-200">
           Go to Login
         </Link>
       </div>
     )
   }
 
-  const displayPlanNames: Record<string, string> = {
-    free: 'Free Learner Tier',
-    basic: 'Basic Scholar Plan',
-    pro: 'Student Pro Membership',
-    advanced: 'Advanced Specialist Plan'
-  }
-
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-slate-50 text-slate-900 select-none">
       {/* Background radial effects */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand-primary/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-brand-secondary/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-6xl mx-auto px-6 py-8 relative z-10">
         
         {/* Header Breadcrumbs */}
         <div className="mb-8">
           <Link href="/dashboard" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 font-medium transition duration-150">
-            <ArrowLeft className="w-4 h-4" /> Back to Workspace
+            <ArrowLeft className="w-4 h-4" /> Back to Workstation
           </Link>
         </div>
 
@@ -192,162 +93,94 @@ export default function UserBillingPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 pb-6 border-b border-slate-200">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
-              Billing & Graduate Credentials
+              Credentials & Sponsorship
             </h1>
-            <p className="text-slate-600 mt-1">Manage subscriptions, download verifiable invoices, and access your graduation certificates.</p>
+            <p className="text-slate-600 mt-1">Inspect your enterprise-sponsored license, view verified certificates, and manage graduation badges.</p>
           </div>
           <div className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-2xl shadow-sm">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="w-2.5 h-2.5 rounded-full bg-brand-secondary animate-pulse" />
             <span className="text-xs font-semibold text-slate-700">{user.email}</span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Left / Middle: Subscription & Invoices */}
+          {/* Left / Middle: Sponsorship Details */}
           <div className="lg:col-span-2 space-y-8">
             
-            {/* Active Subscription Summary */}
+            {/* Active Sponsorship Summary */}
             <div className="bg-white border border-slate-200 rounded-3xl p-6 relative overflow-hidden shadow-sm">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-red-500/5 to-transparent rounded-bl-3xl" />
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-brand-primary/5 to-transparent rounded-bl-3xl" />
               
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-600">
-                  <CreditCard className="w-6 h-6" />
+                <div className="w-12 h-12 rounded-2xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary">
+                  <Building className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">Active Membership Plan</h2>
-                  <p className="text-xs text-slate-500">Subscription Status & Plan Details</p>
+                  <h2 className="text-lg font-bold text-slate-900">Institutional License & Sponsorship</h2>
+                  <p className="text-xs text-slate-500">Your seat is sponsored by an enterprise partner</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-                  <span className="text-xs text-slate-500 block mb-1 font-semibold uppercase tracking-wider">CURRENT TIER</span>
-                  <span className="text-xl font-extrabold text-slate-900">
-                    {subscription ? displayPlanNames[subscription.plan] || subscription.plan.toUpperCase() : 'Free Tier'}
+                  <span className="text-xs text-slate-500 block mb-1 font-semibold uppercase tracking-wider">SPONSORING ORGANIZATION</span>
+                  <span className="text-lg font-extrabold text-brand-primary">
+                    FarFindARole Academy
                   </span>
-                  {subscription?.status === 'active' && (
-                    <span className="inline-flex items-center ml-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
-                      ACTIVE
-                    </span>
-                  )}
+                  <span className="inline-flex items-center ml-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 uppercase">
+                    Sponsored
+                  </span>
                 </div>
 
                 <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-                  <span className="text-xs text-slate-500 block mb-1 font-semibold uppercase tracking-wider">RENEWAL / EXPIRY DATE</span>
+                  <span className="text-xs text-slate-500 block mb-1 font-semibold uppercase tracking-wider">LICENSE EXPIRATION</span>
                   <span className="text-lg font-bold text-slate-800">
-                    {subscription?.current_period_end 
-                      ? new Date(subscription.current_period_end).toLocaleDateString()
-                      : 'Lifetime Access (Free)'}
+                    Perpetual / Perpetual
                   </span>
-                  <span className="text-[10px] text-slate-500 block mt-1">
-                    {subscription?.billing_period === 'annually' ? 'Billed annually' : subscription ? 'Billed monthly' : 'No recurring payments'}
+                  <span className="text-[10px] text-slate-550 block mt-1">
+                    Managed corporate seat credits
                   </span>
                 </div>
               </div>
 
-              {subscription && subscription.plan !== 'free' && (
-                <div className="mt-6 flex flex-wrap gap-4 items-center justify-between pt-4 border-t border-slate-200">
-                  <p className="text-xs text-slate-500 flex items-center gap-1">
-                    <HelpCircle className="w-4 h-4 text-slate-400" /> Billed via Stripe secure processing. Card details are never stored here.
-                  </p>
-                  <Link href="/pricing" className="text-sm font-bold text-red-600 hover:text-red-700 flex items-center gap-1 transition">
-                    Modify Plan <ChevronRight className="w-4 h-4" />
-                  </Link>
+              <div className="p-4 rounded-2xl border border-slate-100 bg-brand-primary/5 space-y-3">
+                <div className="flex items-center gap-2 text-brand-primary font-bold text-xs uppercase tracking-wider">
+                  <Sparkles className="w-4 h-4 text-amber-500 fill-current" />
+                  <span>Licensed Capabilities Unlocked</span>
                 </div>
-              )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-brand-primary flex-shrink-0" />
+                    <span>All Course Specializations Unlocked</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-brand-primary flex-shrink-0" />
+                    <span>Unlimited Coding Arena Sandboxes</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-brand-primary flex-shrink-0" />
+                    <span>Personalized AI Roadmaps</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-brand-primary flex-shrink-0" />
+                    <span>AI Mock Interviews & Assessments</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Invoices List */}
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-600">
-                    <FileText className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold text-slate-900">Transaction History</h2>
-                    <p className="text-xs text-slate-500">Verifiable tax invoices and payment slips</p>
-                  </div>
+            {/* Recruiter Integration Info Card */}
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 relative overflow-hidden shadow-sm flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-600">
+                  <Globe className="w-5 h-5" />
                 </div>
-                <span className="px-3 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs font-semibold text-slate-600">
-                  {invoices.length} Invoices
-                </span>
+                <h3 className="text-sm font-black text-slate-850">Recruiter Pipeline Integration</h3>
               </div>
-
-              {invoices.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-12 bg-slate-50 rounded-2xl text-center border border-slate-200">
-                  <Inbox className="w-12 h-12 text-slate-450 mb-3" />
-                  <p className="text-slate-600 font-medium">No invoice logs found</p>
-                  <p className="text-xs text-slate-550 mt-1">Paid courses and premium subscription invoices will appear here.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {invoices.map((inv) => {
-                    const refundStatus = getRefundStatus(inv.id)
-                    const isRefunded = inv.status === 'refunded'
-                    
-                    return (
-                      <div 
-                        key={inv.id}
-                        className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-300 transition duration-200"
-                      >
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-800">{inv.invoice_number}</span>
-                            {isRefunded ? (
-                              <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-amber-500/15 text-amber-600 border border-amber-500/20">
-                                REFUNDED
-                              </span>
-                            ) : refundStatus === 'pending' ? (
-                              <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-blue-500/15 text-blue-600 border border-blue-500/20">
-                                REFUND PENDING
-                              </span>
-                            ) : (
-                              <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-500/15 text-emerald-700 border border-emerald-500/20">
-                                PAID
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-xs text-slate-500">
-                            {new Date(inv.created_at).toLocaleDateString()} • {inv.plan.toUpperCase()} Plan
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between md:justify-end gap-6">
-                          <div className="text-right">
-                            <span className="font-extrabold text-lg text-slate-900">₹{Number(inv.total).toFixed(2)}</span>
-                            <span className="block text-[10px] text-slate-500">Includes {inv.tax_type}</span>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            {inv.pdf_url && (
-                              <a 
-                                href={inv.pdf_url} 
-                                download
-                                className="p-2.5 bg-white border border-slate-200 hover:border-slate-350 text-slate-600 hover:text-slate-900 rounded-xl transition duration-150 shadow-2xs"
-                                title="Download PDF Invoice"
-                              >
-                                <Download className="w-4 h-4" />
-                              </a>
-                            )}
-                            
-                            {!isRefunded && !refundStatus && !inv.refundRequested && (
-                              <button
-                                onClick={() => handleOpenRefundModal(inv)}
-                                className="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-red-600 text-xs font-bold rounded-xl transition duration-150 shadow-2xs"
-                              >
-                                Claim Refund
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Your workstation is connected to the FarFindARole global recruiting pipeline. Your coding achievements, sandbox completions, and verified certificates are compiled into a secure portfolio. Partner organizations and hiring teams can discover your achievements directly under Seat ID: <strong className="text-slate-800 font-mono select-all">FR-SEAT-2938X-{user.id.slice(0,4).toUpperCase()}</strong>.
+              </p>
             </div>
 
           </div>
@@ -386,9 +219,9 @@ export default function UserBillingPage() {
                         className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3"
                       >
                         <div>
-                          <span className="text-[10px] text-amber-655 font-bold tracking-wider block mb-1 uppercase">GRADUATE CREDENTIAL</span>
+                          <span className="text-[10px] text-brand-secondary font-bold tracking-wider block mb-1 uppercase">GRADUATE CREDENTIAL</span>
                           <span className="font-bold text-slate-800 text-sm block leading-tight">{cert.courses?.title || 'Course Syllabus'}</span>
-                          <span className="text-[10px] text-slate-550">Issued: {new Date(cert.issued_at).toLocaleDateString()}</span>
+                          <span className="text-[10px] text-slate-500">Issued: {new Date(cert.issued_at).toLocaleDateString()}</span>
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
@@ -398,7 +231,7 @@ export default function UserBillingPage() {
                             onClick={() => {
                               alert(`Your certificate download has started, and a copy has been sent to your registered email: ${user?.email}`);
                             }}
-                            className="px-3 py-2 bg-white border border-slate-200 hover:border-slate-300 hover:text-slate-900 text-slate-600 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition text-center justify-center decoration-none shadow-2xs"
+                            className="px-3 py-2 bg-white border border-slate-200 hover:border-slate-350 hover:text-slate-900 text-slate-600 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition text-center justify-center decoration-none shadow-2xs cursor-pointer"
                           >
                             <Download className="w-3.5 h-3.5" /> PDF
                           </a>
@@ -407,7 +240,7 @@ export default function UserBillingPage() {
                             href={linkedinShareUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-3 py-2 bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-200 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition"
+                            className="px-3 py-2 bg-brand-primary/5 hover:bg-brand-primary text-brand-primary hover:text-white border border-brand-primary/15 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition cursor-pointer"
                           >
                             <Share2 className="w-3.5 h-3.5" /> Share
                           </a>
@@ -419,19 +252,19 @@ export default function UserBillingPage() {
               )}
             </div>
 
-            {/* Quick Billing Help */}
+            {/* Sponsorship FAQ */}
             <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
               <h3 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                <HelpCircle className="w-5 h-5 text-red-500" /> Frequently Asked Questions
+                <HelpCircle className="w-5 h-5 text-brand-secondary" /> Sponsorship FAQ
               </h3>
               <div className="space-y-4 text-xs">
                 <div>
-                  <h4 className="font-semibold text-slate-700 mb-1">How do I request a refund?</h4>
-                  <p className="text-slate-500">Clicking "Claim Refund" next to an invoice registers a request. Refunds are processed back to the original Stripe payment method in 5-10 days.</p>
+                  <h4 className="font-semibold text-slate-700 mb-1">How is my account sponsored?</h4>
+                  <p className="text-slate-500">Academic institutions and corporate partners purchase bulk site licenses, which grant their designated students and employees unlimited, perpetual access to our workstation.</p>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-slate-700 mb-1">Where is my certificate?</h4>
-                  <p className="text-slate-500">Certificates are automatically compiled as verifiable PDFs once you reach 100% progress in any course dashboard.</p>
+                  <h4 className="font-semibold text-slate-700 mb-1">How do I verify credentials?</h4>
+                  <p className="text-slate-500">Graduation certificates are cryptographically verified. Each certificate includes a custom URL containing an authentic verification hash that employers can use to verify your skills.</p>
                 </div>
               </div>
             </div>
@@ -441,87 +274,6 @@ export default function UserBillingPage() {
         </div>
 
       </div>
-
-      {/* Claim Refund Modal Form */}
-      {showRefundModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl animate-in fade-in-50 zoom-in-95 text-slate-900">
-            
-            <div className="px-6 py-4 bg-gradient-to-r from-red-50 to-slate-50 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-red-500" /> Request Transaction Refund
-              </h3>
-              <button 
-                onClick={() => setShowRefundModal(false)}
-                className="text-slate-400 hover:text-slate-700 transition"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleRequestRefund} className="p-6 space-y-4">
-              {refundSuccessMsg ? (
-                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-emerald-600">{refundSuccessMsg}</p>
-                </div>
-              ) : (
-                <>
-                  <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-xs space-y-1">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Invoice Number:</span>
-                      <span className="font-semibold text-slate-700">{selectedInvoice?.invoice_number}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Total Billed Amount:</span>
-                      <span className="font-bold text-slate-900">₹{Number(selectedInvoice?.total).toFixed(2)}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-550 mb-2">
-                      REASON FOR REFUND REQUEST
-                    </label>
-                    <textarea
-                      required
-                      rows={3}
-                      value={refundReason}
-                      onChange={(e) => setRefundReason(e.target.value)}
-                      placeholder="Please briefly explain why you are requesting a refund..."
-                      className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-red-500 rounded-2xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none transition duration-150"
-                    />
-                  </div>
-
-                  <div className="flex gap-3 justify-end pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowRefundModal(false)}
-                      className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-800 transition"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={refunding}
-                      className="px-5 py-2.5 bg-red-600 hover:bg-red-700 disabled:bg-red-800 text-white text-sm font-bold rounded-xl flex items-center gap-2 transition"
-                    >
-                      {refunding ? (
-                        <>
-                          <RefreshCw className="w-4 h-4 animate-spin" /> Submitting...
-                        </>
-                      ) : (
-                        'Submit Request'
-                      )}
-                    </button>
-                  </div>
-                </>
-              )}
-            </form>
-
-          </div>
-        </div>
-      )}
-
     </div>
   )
 }

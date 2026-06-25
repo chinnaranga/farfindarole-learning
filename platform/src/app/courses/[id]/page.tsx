@@ -248,27 +248,6 @@ export default function CourseDetailPage() {
   const PLAN_RANK: Record<string, number> = { 'free': 0, 'basic': 1, 'pro': 2, 'advanced': 3 }
 
   const handleLessonClick = (lesson: any, index: number) => {
-    // Read tier from DB
-    const courseRank = TIER_RANK[courseTier] ?? 0
-    const userRank = PLAN_RANK[subscriptionPlan] ?? 0
-
-    // A course is locked if its tier rank is HIGHER than user's plan rank
-    const isCourseLockedForPlan = userRole !== 'admin' && courseRank > userRank
-
-    // Locked for plan → show upgrade modal
-    if (isCourseLockedForPlan) {
-      setSelectedLockedLesson(lesson)
-      setShowUnlockModal(true)
-      return
-    }
-
-    // Free-preview: first lesson is always accessible; others need at least Free plan
-    if (!lesson.free_preview && index > 0 && subscriptionPlan === 'free' && courseTier !== 'Free') {
-      setSelectedLockedLesson(lesson)
-      setShowUnlockModal(true)
-      return
-    }
-
     router.push(`/courses/${course.id}/lessons/${lesson.id}`)
   }
 
@@ -702,69 +681,13 @@ export default function CourseDetailPage() {
               </div>
             </div>
 
-          </div>
-
         </div>
 
       </div>
 
-      {/* ========================================================================= */}
-      {/* SUBSCRIPTION PRO-LOCK UPGRADE MODAL OVERLAY */}
-      {/* ========================================================================= */}
-      {showUnlockModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white max-w-md w-full rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-2xl relative flex flex-col items-center text-center gap-6 overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-[30px] pointer-events-none" />
-            
-            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600">
-              <Crown className="w-8 h-8 fill-current" />
-            </div>
+    </div>
 
-            <div className="space-y-2">
-              <h3 className="text-lg font-black text-slate-905">
-                {courseTier === 'Advanced' ? 'Advanced Architect Required' : courseTier === 'Pro' ? 'Pro Builder Required' : 'Basic Plan Required'}
-              </h3>
-              <p className="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
-                This course/module is locked under the <span className="font-bold text-red-600 uppercase">{courseTier}</span> tier. Upgrade your subscription to unlock full access.
-              </p>
-            </div>
-
-            {/* Pro Locks Features checklist */}
-            <div className="w-full text-left space-y-2.5 bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs">
-              <div className="flex items-start gap-2 text-slate-650 font-semibold">
-                <Check className="w-4 h-4 text-amber-500 fill-current flex-shrink-0 mt-0.5" />
-                <span>Access all courses locked in this tier</span>
-              </div>
-              <div className="flex items-start gap-2 text-slate-655 font-semibold">
-                <Check className="w-4 h-4 text-amber-500 fill-current flex-shrink-0 mt-0.5" />
-                <span>Unlimited interactive checkpoints and quizzes</span>
-              </div>
-              <div className="flex items-start gap-2 text-slate-655 font-semibold">
-                <Check className="w-4 h-4 text-amber-500 fill-current flex-shrink-0 mt-0.5" />
-                <span>Verifiable course completion certificates</span>
-              </div>
-            </div>
-
-            <div className="flex gap-3 w-full">
-              <Link
-                href="/pricing"
-                className="flex-1 text-center bg-gradient-to-r from-red-600 to-amber-500 hover:from-red-750 hover:to-amber-600 text-white font-bold text-xs py-3 rounded-xl transition shadow-md uppercase tracking-wider"
-              >
-                Upgrade Plan
-              </Link>
-              <button
-                onClick={() => {
-                  setShowUnlockModal(false)
-                  setSelectedLockedLesson(null)
-                }}
-                className="flex-1 bg-white hover:bg-slate-50 border border-slate-250 text-slate-500 font-bold text-xs py-3 rounded-xl transition cursor-pointer"
-              >
-                Go Back
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Subscription upgrade overlay removed */}
 
       {/* Course Terms & Conditions Modal Overlay */}
       <PolicyModal

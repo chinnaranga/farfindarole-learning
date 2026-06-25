@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+@theme {
+  --color-brand-primary: #0a2540;
+  --color-brand-secondary: #dc2626;
+  --color-brand-navy: #0a2540;
+  --color-brand-crimson: #dc2626;
+}
+
 @layer base {
   :root {
     --background: #f8fafc; /* Cool Slate 50 neutral background */
@@ -8,7 +15,7 @@
     --card: #ffffff; /* Clean high-contrast white card blocks */
     --card-foreground: #0f172a;
     
-    --primary: #dc2626; /* Crimson Red primary accent */
+    --primary: #0a2540; /* Sapphire Navy primary accent */
     --primary-foreground: #ffffff;
     
     --secondary: #f1f5f9; /* Soft Slate 100 panels */
@@ -17,12 +24,12 @@
     --muted: #f8fafc;
     --muted-foreground: #64748b; /* Slate 500 secondary text */
     
-    --accent: #dc2626;
+    --accent: #dc2626; /* FarFindARole Crimson Red secondary accent */
     --accent-foreground: #ffffff;
     
     --border: #e2e8f0; /* Crisp Slate 200 borders */
     --input: #ffffff;
-    --ring: #dc2626;
+    --ring: #0a2540;
     
     --radius: 0.75rem;
   }

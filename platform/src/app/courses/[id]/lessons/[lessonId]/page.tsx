@@ -1095,7 +1095,7 @@ Provide a helpful, concise explanation of 2-3 sentences explaining the concepts 
               {lessons.map((les, idx) => {
                 const isCurrent = les.id === lessonId
                 const isCompleted = completedLessonsCount > idx || (isCurrent && completed)
-                const isLocked = idx > 0 && !isCompleted && !isCurrent && subscriptionPlan === 'free' && !les.free_preview
+                const isLocked = false
 
                 return (
                   <div key={les.id} className="space-y-1">

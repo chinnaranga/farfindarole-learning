@@ -109,11 +109,8 @@ export default function DashboardPage() {
         if (user) {
           setUserEmail(user.email || '')
           setUserName(user.user_metadata?.full_name || user.email?.split('@')[0] || 'Student')
-          const sub = await getUserSubscription(user.id)
-          const plan = sub.plan
-          if (plan === 'advanced') setRole('advanced')
-          else if (plan === 'pro') setRole('pro')
-          else setRole('student')
+          // All enterprise accounts are automatically granted advanced workstation privileges
+          setRole('advanced')
         }
 
         await loadDashboardCourses(activeUserId)
@@ -238,33 +235,14 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Student Workstation</h1>
-              {role === 'advanced' ? (
-                <span className="flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black bg-gradient-to-r from-indigo-500 to-purple-600 text-white border border-indigo-400 uppercase tracking-widest shadow-sm">
-                  <Crown className="w-3 h-3 fill-current" /> Advanced
-                </span>
-              ) : role === 'pro' ? (
-                <span className="flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black bg-gradient-to-r from-amber-500 to-red-500 text-white border border-amber-400 uppercase tracking-widest shadow-sm">
-                  <Crown className="w-3 h-3 fill-current" /> Pro
-                </span>
-              ) : (
-                <span className="flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold bg-slate-100 border border-slate-300 text-slate-600 uppercase tracking-wider">
-                  Free
-                </span>
-              )}
+              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black bg-brand-primary text-white border border-brand-primary/10 uppercase tracking-wider shadow-sm">
+                <Award className="w-3 h-3" /> Sponsored License
+              </span>
             </div>
             <p className="text-slate-500 text-sm mt-1">
-              Welcome, <span className="font-bold text-slate-700">{role === 'advanced' ? 'Student (Advanced)' : role === 'pro' ? 'Student (Pro)' : 'Student (Free)'}</span> — manage your enrollments, inspect credentials, and track your job readiness.
+              Welcome, <span className="font-bold text-brand-primary">{userName}</span> — manage your courses, view verified credentials, and track your professional readiness.
             </p>
           </div>
-          
-          {role === 'student' && (
-            <Link 
-              href="/pricing"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-amber-500 hover:from-red-700 hover:to-amber-600 text-white text-xs font-black px-5 py-3 rounded-xl transition shadow-md uppercase tracking-wider scale-100 hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <Zap className="w-3.5 h-3.5 fill-current" /> Upgrade to Pro
-            </Link>
-          )}
         </div>
 
         {/* Stats Grid */}
