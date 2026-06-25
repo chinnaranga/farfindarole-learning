@@ -72,7 +72,7 @@ export default function CourseTermsPage() {
           <div className="space-y-3">
             <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">3. Anti-Sharing Violations</h3>
             <p className="text-xs text-slate-500 leading-relaxed font-medium">
-              We monitor account logins and session pings. Accessing your account concurrently from multiple locations or sharing workspace details with friends to avoid plan subscription upgrades will lead to account suspension.
+              We monitor account logins and session pings. Accessing your account concurrently from multiple locations or sharing workspace details to bypass institutional seat licenses will lead to account suspension.
             </p>
           </div>
 
