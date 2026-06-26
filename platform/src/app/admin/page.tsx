@@ -15,6 +15,7 @@ import {
 } from '@/lib/supabase'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { ROADMAP_DATA, Milestone, LearningNode } from '../roadmaps/[id]/page'
 import { 
   LayoutDashboard, 
   Users, 
@@ -43,10 +44,14 @@ import {
   Terminal,
   ArrowRight,
   ExternalLink,
-  Download
+  Download,
+  Map,
+  ChevronDown,
+  ChevronUp,
+  Save
 } from 'lucide-react'
 
-type AdminTab = 'overview' | 'users' | 'courses' | 'ai-studio' | 'analytics' | 'subscriptions'
+type AdminTab = 'overview' | 'users' | 'courses' | 'ai-studio' | 'analytics' | 'subscriptions' | 'roadmaps'
 type GeneratorType = 'course' | 'lesson' | 'quiz' | 'flashcards' | 'exam' | 'rubric'
 
 export default function AdminDashboard() {
@@ -56,6 +61,14 @@ export default function AdminDashboard() {
   const [statusMsg, setStatusMsg] = useState({ type: '', text: '' })
   const [adminEmail, setAdminEmail] = useState<string>('')
   const [userFilter, setUserFilter] = useState<'all' | 'active-students' | 'active-admins' | 'suspended'>('all')
+
+  // Roadmap Editor States
+  const [selectedRoadmapId, setSelectedRoadmapId] = useState<string>('frontend')
+  const [roadmapMilestones, setRoadmapMilestones] = useState<Milestone[]>([])
+  const [editingMilestoneIdx, setEditingMilestoneIdx] = useState<number | null>(null)
+  const [editingNodeIdx, setEditingNodeIdx] = useState<number | null>(null)
+  const [editingNode, setEditingNode] = useState<Partial<LearningNode> | null>(null)
+  const [nodeEditorTab, setNodeEditorTab] = useState<'general' | 'lesson' | 'sandbox' | 'quiz' | 'project'>('general')
 
   // Core Data States
   const [courses, setCourses] = useState<any[]>([])
@@ -144,6 +157,42 @@ export default function AdminDashboard() {
     const clockInterval = setInterval(() => setTick(t => t + 1), 1000)
     return () => clearInterval(clockInterval)
   }, [])
+
+  // Load roadmap data into editor
+  useEffect(() => {
+    if (activeTab === 'roadmaps') {
+      const localData = localStorage.getItem(`edited_roadmap_${selectedRoadmapId}`)
+      if (localData) {
+        try {
+          setRoadmapMilestones(JSON.parse(localData))
+          setEditingMilestoneIdx(null)
+          setEditingNodeIdx(null)
+          setEditingNode(null)
+          return
+        } catch (e) {
+          console.error(e)
+        }
+      }
+      // Fallback to static
+      const staticData = ROADMAP_DATA[selectedRoadmapId] || ROADMAP_DATA.frontend
+      setRoadmapMilestones(JSON.parse(JSON.stringify(staticData))) // Deep clone
+      setEditingMilestoneIdx(null)
+      setEditingNodeIdx(null)
+      setEditingNode(null)
+    }
+  }, [selectedRoadmapId, activeTab])
+
+  const handleSaveRoadmap = () => {
+    try {
+      localStorage.setItem(`edited_roadmap_${selectedRoadmapId}`, JSON.stringify(roadmapMilestones))
+      setStatusMsg({ type: 'success', text: `Roadmap '${selectedRoadmapId}' saved successfully. All changes are now live in the Student Portal.` })
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (e) {
+      console.error(e)
+      setStatusMsg({ type: 'error', text: 'Failed to save roadmap. Please check your browser storage limits.' })
+    }
+  }
 
   const loadCourses = async () => {
     try {
@@ -768,6 +817,7 @@ export default function AdminDashboard() {
             { id: 'overview' as const, label: 'Overview Metrics', icon: <LayoutDashboard className="w-4 h-4" /> },
             { id: 'users' as const, label: 'User Directory', icon: <Users className="w-4 h-4" /> },
             { id: 'courses' as const, label: 'Course Catalog', icon: <BookOpen className="w-4 h-4" /> },
+            { id: 'roadmaps' as const, label: 'Manage Roadmaps', icon: <Map className="w-4 h-4" /> },
             { id: 'ai-studio' as const, label: 'AI Content Studio', icon: <Sparkles className="w-4 h-4" /> },
             { id: 'analytics' as const, label: 'Platform Analytics', icon: <LineChart className="w-4 h-4" /> },
             { id: 'subscriptions' as const, label: 'Stripe Subscriptions', icon: <CreditCard className="w-4 h-4" /> }
@@ -821,6 +871,7 @@ export default function AdminDashboard() {
                 { id: 'overview' as const, icon: <LayoutDashboard className="w-4 h-4" /> },
                 { id: 'users' as const, icon: <Users className="w-4 h-4" /> },
                 { id: 'courses' as const, icon: <BookOpen className="w-4 h-4" /> },
+                { id: 'roadmaps' as const, icon: <Map className="w-4 h-4" /> },
                 { id: 'ai-studio' as const, icon: <Sparkles className="w-4 h-4" /> },
                 { id: 'analytics' as const, icon: <LineChart className="w-4 h-4" /> },
                 { id: 'subscriptions' as const, icon: <CreditCard className="w-4 h-4" /> }
@@ -1838,6 +1889,740 @@ export default function AdminDashboard() {
                   <div className="py-16 text-center text-slate-500 text-xs">No Stripe transactions or checkout histories found.</div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* ── 7. CAREER ROADMAPS MANAGEMENT TAB ── */}
+          {activeTab === 'roadmaps' && (
+            <div className="max-w-6xl mx-auto space-y-6 text-left animate-fadeIn">
+              {/* Header */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Career Roadmaps Manager</h2>
+                  <p className="text-slate-500 text-xs mt-1">
+                    Design skill milestones, write markdown study notes, build sandboxed code exercises, and configure quiz evaluations.
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* Select Roadmap */}
+                  <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-2 rounded-xl">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">Active Track:</span>
+                    <select
+                      value={selectedRoadmapId}
+                      onChange={(e) => setSelectedRoadmapId(e.target.value)}
+                      className="bg-transparent text-xs font-bold text-slate-800 border-none outline-none cursor-pointer"
+                    >
+                      <option value="frontend">Frontend Developer</option>
+                      <option value="backend">Backend Developer</option>
+                      {(() => {
+                        const list: string[] = []
+                        if (typeof window !== 'undefined') {
+                          for (let i = 0; i < localStorage.length; i++) {
+                            const key = localStorage.key(i)
+                            if (key && key.startsWith('edited_roadmap_')) {
+                              const id = key.replace('edited_roadmap_', '')
+                              if (id !== 'frontend' && id !== 'backend') {
+                                list.push(id)
+                              }
+                            }
+                          }
+                        }
+                        return list.map(id => (
+                          <option key={id} value={id}>{id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</option>
+                        ))
+                      })()}
+                    </select>
+                  </div>
+
+                  {/* Create Custom Roadmap Button */}
+                  <button
+                    onClick={() => {
+                      const id = prompt('Enter a unique URL slug for your custom roadmap (e.g., cloud-engineer, security-analyst):')
+                      if (!id) return
+                      const slug = id.toLowerCase().replace(/[^a-z0-9-]/g, '-')
+                      if (!slug) return
+                      
+                      const name = prompt('Enter the display name for this roadmap (e.g., Cloud Security Engineer):', id)
+                      if (!name) return
+
+                      // Initialize empty roadmap milestones
+                      const template: Milestone[] = [
+                        {
+                          title: 'Milestone 1: Foundations',
+                          desc: 'Master the core skills and introductory paradigms.',
+                          nodes: [
+                            {
+                              id: `${slug}-basics`,
+                              name: `${name} Introduction`,
+                              desc: `Get started with ${name} core concepts.`,
+                              duration: '1 hour',
+                              difficulty: 'Beginner',
+                              objectives: ['Understand key terms', 'Learn foundational architecture'],
+                              prerequisites: ['None'],
+                              lessonContent: `# Introduction to ${name}\n\nStart your journey here!`,
+                              quizQuestions: [
+                                {
+                                  question: 'What is the primary goal of this track?',
+                                  options: ['Mastering skills', 'Slowing down', 'Ignoring practices', 'N/A'],
+                                  correctIndex: 0,
+                                  explanation: 'The goal is to master skills.'
+                                }
+                              ],
+                              starterCode: '// Write starter code here\n',
+                              expectedOutput: 'success',
+                              testValidation: 'true'
+                            }
+                          ]
+                        }
+                      ]
+
+                      localStorage.setItem(`edited_roadmap_${slug}`, JSON.stringify(template))
+                      setSelectedRoadmapId(slug)
+                      setRoadmapMilestones(template)
+                      setStatusMsg({ type: 'success', text: `Custom roadmap '${name}' created! Select it to start editing.` })
+                    }}
+                    className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-3 py-2.5 rounded-xl transition cursor-pointer border-none"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Create Track
+                  </button>
+
+                  {/* Save Roadmap Button */}
+                  <button
+                    onClick={handleSaveRoadmap}
+                    className="flex items-center gap-1.5 bg-red-600 hover:bg-red-750 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-md cursor-pointer border-none"
+                  >
+                    <Save className="w-3.5 h-3.5" /> Save All Changes
+                  </button>
+                </div>
+              </div>
+
+              {/* Status Indicator */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-xs">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">Total Milestones</p>
+                  <p className="text-xl font-extrabold text-slate-800 mt-1">{roadmapMilestones.length}</p>
+                </div>
+                <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-xs">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">Total Skill Nodes</p>
+                  <p className="text-xl font-extrabold text-slate-800 mt-1">
+                    {roadmapMilestones.flatMap(m => m.nodes || []).length}
+                  </p>
+                </div>
+                <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-xs">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">Track Code</p>
+                  <p className="text-sm font-mono font-extrabold text-red-600 mt-2.5 uppercase tracking-wide">
+                    {selectedRoadmapId}
+                  </p>
+                </div>
+                <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-xs">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">Active Selection</p>
+                  <p className="text-xs font-bold text-slate-700 mt-2.5 truncate">
+                    {editingNodeIdx !== null ? `Node: ${editingNode?.name || 'N/A'}` : 'No Node Selected'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Two Column Layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                {/* Left Column: Milestones & Nodes List */}
+                <div className="lg:col-span-5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Curriculum Tree</h3>
+                    <button
+                      onClick={() => {
+                        const title = prompt('Enter Milestone Title (e.g., Milestone 3: Database Integration):')
+                        if (!title) return
+                        const desc = prompt('Enter Milestone Description:') || ''
+                        setRoadmapMilestones([...roadmapMilestones, { title, desc, nodes: [] }])
+                      }}
+                      className="text-[10px] text-red-600 hover:text-red-750 font-black flex items-center gap-1 bg-transparent border-none cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" /> Add Milestone
+                    </button>
+                  </div>
+
+                  <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                    {roadmapMilestones.map((milestone, mIdx) => (
+                      <div key={mIdx} className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
+                        {/* Milestone Header */}
+                        <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-start justify-between gap-3">
+                          <div className="text-left min-w-0">
+                            <input
+                              type="text"
+                              value={milestone.title}
+                              onChange={(e) => {
+                                const updated = [...roadmapMilestones]
+                                updated[mIdx].title = e.target.value
+                                setRoadmapMilestones(updated)
+                              }}
+                              className="text-xs font-black text-slate-800 bg-transparent border-none outline-none focus:bg-white focus:ring-1 focus:ring-slate-300 rounded px-1 w-full"
+                            />
+                            <input
+                              type="text"
+                              value={milestone.desc}
+                              onChange={(e) => {
+                                const updated = [...roadmapMilestones]
+                                updated[mIdx].desc = e.target.value
+                                setRoadmapMilestones(updated)
+                              }}
+                              placeholder="Add milestone description..."
+                              className="text-[10px] text-slate-500 bg-transparent border-none outline-none focus:bg-white focus:ring-1 focus:ring-slate-300 rounded px-1 w-full mt-1"
+                            />
+                          </div>
+                          
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <button
+                              title="Add Node to Milestone"
+                              onClick={() => {
+                                const nodeName = prompt('Enter node display name (e.g., Flexbox Layouts):')
+                                if (!nodeName) return
+                                const nodeId = nodeName.toLowerCase().replace(/[^a-z0-9-]/g, '-')
+                                
+                                const newNode: LearningNode = {
+                                  id: nodeId,
+                                  name: nodeName,
+                                  desc: `Master the concepts of ${nodeName}.`,
+                                  duration: '2 hours',
+                                  difficulty: 'Beginner',
+                                  objectives: ['Learn core concepts', 'Write demonstration code'],
+                                  prerequisites: ['None'],
+                                  lessonContent: `# ${nodeName}\n\nExplain key topics here.`,
+                                  quizQuestions: [
+                                    {
+                                      question: 'Sample Question?',
+                                      options: ['Option A', 'Option B', 'Option C', 'Option D'],
+                                      correctIndex: 0,
+                                      explanation: 'Option A is correct.'
+                                    }
+                                  ],
+                                  starterCode: '// Starter code here\n',
+                                  expectedOutput: 'success',
+                                  testValidation: 'true'
+                                }
+
+                                const updated = [...roadmapMilestones]
+                                updated[mIdx].nodes.push(newNode)
+                                setRoadmapMilestones(updated)
+                                // Auto-select the newly added node for editing
+                                setEditingMilestoneIdx(mIdx)
+                                setEditingNodeIdx(updated[mIdx].nodes.length - 1)
+                                setEditingNode(newNode)
+                              }}
+                              className="p-1 text-slate-400 hover:text-slate-700 bg-white border border-slate-200 hover:border-slate-300 rounded-lg transition cursor-pointer"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                            <button
+                              title="Delete Milestone"
+                              onClick={() => {
+                                if (confirm(`Are you sure you want to delete "${milestone.title}"? This will delete all its nodes.`)) {
+                                  const updated = roadmapMilestones.filter((_, idx) => idx !== mIdx)
+                                  setRoadmapMilestones(updated)
+                                  setEditingMilestoneIdx(null)
+                                  setEditingNodeIdx(null)
+                                  setEditingNode(null)
+                                }
+                              }}
+                              className="p-1 text-slate-400 hover:text-red-655 bg-white border border-slate-200 hover:border-red-100 rounded-lg transition cursor-pointer"
+                            >
+                              <Trash className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Milestone Nodes */}
+                        <div className="p-3 space-y-2">
+                          {milestone.nodes.length === 0 ? (
+                            <p className="text-[10px] text-slate-400 text-center py-4 italic">No skill nodes in this milestone. Click '+' to add one.</p>
+                          ) : (
+                            milestone.nodes.map((node, nIdx) => {
+                              const isSelected = editingMilestoneIdx === mIdx && editingNodeIdx === nIdx
+                              return (
+                                <div
+                                  key={node.id || nIdx}
+                                  onClick={() => {
+                                    setEditingMilestoneIdx(mIdx)
+                                    setEditingNodeIdx(nIdx)
+                                    setEditingNode({ ...node })
+                                  }}
+                                  className={`p-3 rounded-xl border transition text-left cursor-pointer flex items-center justify-between gap-3 ${
+                                    isSelected 
+                                      ? 'bg-red-50/40 border-red-200 shadow-xs' 
+                                      : 'bg-white border-slate-150 hover:border-slate-300 hover:bg-slate-50'
+                                  }`}
+                                >
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-xs font-bold text-slate-800 truncate">{node.name}</span>
+                                      <span className={`text-[8px] font-black px-1.5 py-0.2 rounded uppercase tracking-wider ${
+                                        node.difficulty === 'Advanced' 
+                                          ? 'bg-purple-50 text-purple-600 border border-purple-100' 
+                                          : node.difficulty === 'Intermediate'
+                                          ? 'bg-blue-50 text-blue-600 border border-blue-100'
+                                          : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                                      }`}>
+                                        {node.difficulty}
+                                      </span>
+                                    </div>
+                                    <p className="text-[10px] text-slate-450 mt-1 truncate">{node.desc}</p>
+                                  </div>
+
+                                  <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                                    {/* Reorder Buttons */}
+                                    <button
+                                      disabled={nIdx === 0}
+                                      onClick={() => {
+                                        const updated = [...roadmapMilestones]
+                                        const nodes = updated[mIdx].nodes
+                                        const temp = nodes[nIdx]
+                                        nodes[nIdx] = nodes[nIdx - 1]
+                                        nodes[nIdx - 1] = temp
+                                        setRoadmapMilestones(updated)
+                                        if (isSelected) {
+                                          setEditingNodeIdx(nIdx - 1)
+                                        }
+                                      }}
+                                      className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 cursor-pointer"
+                                    >
+                                      <ChevronUp className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                      disabled={nIdx === milestone.nodes.length - 1}
+                                      onClick={() => {
+                                        const updated = [...roadmapMilestones]
+                                        const nodes = updated[mIdx].nodes
+                                        const temp = nodes[nIdx]
+                                        nodes[nIdx] = nodes[nIdx + 1]
+                                        nodes[nIdx + 1] = temp
+                                        setRoadmapMilestones(updated)
+                                        if (isSelected) {
+                                          setEditingNodeIdx(nIdx + 1)
+                                        }
+                                      }}
+                                      className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 cursor-pointer"
+                                    >
+                                      <ChevronDown className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        if (confirm(`Delete node "${node.name}"?`)) {
+                                          const updated = [...roadmapMilestones]
+                                          updated[mIdx].nodes = updated[mIdx].nodes.filter((_, idx) => idx !== nIdx)
+                                          setRoadmapMilestones(updated)
+                                          setEditingMilestoneIdx(null)
+                                          setEditingNodeIdx(null)
+                                          setEditingNode(null)
+                                        }
+                                      }}
+                                      className="p-1 text-slate-400 hover:text-red-600 cursor-pointer"
+                                    >
+                                      <Trash className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                </div>
+                              )
+                            })
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Right Column: Active Node Editor */}
+                <div className="lg:col-span-7">
+                  {editingNode === null ? (
+                    <div className="bg-white border border-slate-200 rounded-[24px] p-12 text-center text-slate-400 space-y-3 flex flex-col items-center shadow-xs">
+                      <Map className="w-12 h-12 text-slate-300" />
+                      <h4 className="text-sm font-black text-slate-700 uppercase tracking-wider">No Node Selected</h4>
+                      <p className="text-xs text-slate-450 max-w-sm leading-relaxed">
+                        Select an existing skill node from the curriculum tree on the left, or create a new node to manage its lessons, compiler configurations, and quizzes.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="bg-white border border-slate-200 rounded-[24px] shadow-sm overflow-hidden text-left flex flex-col">
+                      
+                      {/* Node Form Header */}
+                      <div className="p-4 sm:p-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-4">
+                        <div>
+                          <span className="text-[9px] font-black text-red-655 uppercase tracking-widest bg-red-550/10 border border-red-500/20 px-2.5 py-1 rounded-full">
+                            Active Editor
+                          </span>
+                          <h3 className="text-base font-extrabold text-slate-900 mt-1.5">Syllabus: {editingNode.name}</h3>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              // Save editingNode into the roadmapMilestones array in state
+                              if (editingMilestoneIdx !== null && editingNodeIdx !== null) {
+                                const updated = [...roadmapMilestones]
+                                updated[editingMilestoneIdx].nodes[editingNodeIdx] = editingNode as LearningNode
+                                setRoadmapMilestones(updated)
+                                setStatusMsg({ type: 'success', text: `Node "${editingNode.name}" staged! Remember to click "Save All Changes" to persist.` })
+                              }
+                            }}
+                            className="bg-red-655 hover:bg-red-750 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer border-none flex items-center gap-1"
+                          >
+                            <Save className="w-3.5 h-3.5" /> Stage Node
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingMilestoneIdx(null)
+                              setEditingNodeIdx(null)
+                              setEditingNode(null)
+                            }}
+                            className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs px-3.5 py-2 rounded-xl transition cursor-pointer border-none"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Node Editor Tabs */}
+                      <div className="flex border-b border-slate-200 bg-slate-50/50 overflow-x-auto">
+                        {(['general', 'lesson', 'sandbox', 'quiz', 'project'] as const).map(tab => (
+                          <button
+                            key={tab}
+                            onClick={() => setNodeEditorTab(tab)}
+                            className={`px-4 py-3 text-[10px] font-black uppercase tracking-wider transition-colors border-b-2 outline-none cursor-pointer ${
+                              nodeEditorTab === tab 
+                                ? 'border-red-605 text-red-655 bg-white' 
+                                : 'border-transparent text-slate-500 hover:text-slate-800'
+                            }`}
+                          >
+                            {tab === 'sandbox' ? '💻 Code Lab' : tab === 'quiz' ? '📝 Quiz' : tab === 'project' ? '🚀 Project' : tab}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Node Editor Tab Content */}
+                      <div className="p-5 space-y-4">
+                        
+                        {/* GENERAL TAB */}
+                        {nodeEditorTab === 'general' && (
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="flex flex-col gap-1">
+                                <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Node ID (unique slug)</label>
+                                <input
+                                  type="text"
+                                  value={editingNode.id || ''}
+                                  onChange={(e) => setEditingNode({ ...editingNode, id: e.target.value })}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-brand-primary focus:bg-white transition"
+                                />
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Node Title</label>
+                                <input
+                                  type="text"
+                                  value={editingNode.name || ''}
+                                  onChange={(e) => setEditingNode({ ...editingNode, name: e.target.value })}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-brand-primary focus:bg-white transition font-bold text-slate-800"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Brief Description</label>
+                              <input
+                                type="text"
+                                value={editingNode.desc || ''}
+                                onChange={(e) => setEditingNode({ ...editingNode, desc: e.target.value })}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-brand-primary focus:bg-white transition"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="flex flex-col gap-1">
+                                <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Duration (e.g. 2 hours)</label>
+                                <input
+                                  type="text"
+                                  value={editingNode.duration || ''}
+                                  onChange={(e) => setEditingNode({ ...editingNode, duration: e.target.value })}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-brand-primary focus:bg-white transition"
+                                />
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Difficulty Scale</label>
+                                <select
+                                  value={editingNode.difficulty || 'Beginner'}
+                                  onChange={(e) => setEditingNode({ ...editingNode, difficulty: e.target.value as any })}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs outline-none focus:border-brand-primary focus:bg-white transition cursor-pointer font-bold text-slate-750"
+                                >
+                                  <option value="Beginner">Beginner</option>
+                                  <option value="Intermediate">Intermediate</option>
+                                  <option value="Advanced">Advanced</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Prerequisites (comma-separated)</label>
+                              <input
+                                type="text"
+                                value={editingNode.prerequisites?.join(', ') || ''}
+                                onChange={(e) => setEditingNode({ ...editingNode, prerequisites: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-brand-primary focus:bg-white transition"
+                              />
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Learning Objectives (one per line)</label>
+                              <textarea
+                                rows={3}
+                                value={editingNode.objectives?.join('\n') || ''}
+                                onChange={(e) => setEditingNode({ ...editingNode, objectives: e.target.value.split('\n').map(s => s.trim()).filter(Boolean) })}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-brand-primary focus:bg-white transition font-sans resize-y text-slate-700"
+                                placeholder="Enter objectives..."
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* LESSON TAB */}
+                        {nodeEditorTab === 'lesson' && (
+                          <div className="space-y-2 flex flex-col">
+                            <div className="flex items-center justify-between">
+                              <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Lesson Material (Markdown Syntax)</label>
+                              <span className="text-[8px] font-bold text-slate-400">Supports headings, code snippets, highlights, lists</span>
+                            </div>
+                            <textarea
+                              rows={15}
+                              value={editingNode.lessonContent || ''}
+                              onChange={(e) => setEditingNode({ ...editingNode, lessonContent: e.target.value })}
+                              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs font-mono outline-none focus:border-brand-primary focus:bg-white transition resize-y text-slate-800 leading-relaxed"
+                              placeholder="# Write your lesson here in Markdown..."
+                            />
+                          </div>
+                        )}
+
+                        {/* CODE PLAYGROUND TAB */}
+                        {nodeEditorTab === 'sandbox' && (
+                          <div className="space-y-4">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Starter Code (Pre-populated in sandbox)</label>
+                              <textarea
+                                rows={5}
+                                value={editingNode.starterCode || ''}
+                                onChange={(e) => setEditingNode({ ...editingNode, starterCode: e.target.value })}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono outline-none focus:border-brand-primary focus:bg-white transition resize-y text-slate-800"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="flex flex-col gap-1">
+                                <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Expected Console Output (exact match)</label>
+                                <input
+                                  type="text"
+                                  value={editingNode.expectedOutput || ''}
+                                  onChange={(e) => setEditingNode({ ...editingNode, expectedOutput: e.target.value })}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-mono outline-none focus:border-brand-primary focus:bg-white transition text-slate-800"
+                                />
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Assertion Evaluation Script (JS expression)</label>
+                                <input
+                                  type="text"
+                                  value={editingNode.testValidation || ''}
+                                  onChange={(e) => setEditingNode({ ...editingNode, testValidation: e.target.value })}
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-mono outline-none focus:border-brand-primary focus:bg-white transition text-slate-800"
+                                  placeholder="e.g. sum(2,3) === 5"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* QUIZ TAB */}
+                        {nodeEditorTab === 'quiz' && (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Graded Quiz Questions</h4>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newQ = {
+                                    question: 'New Multiple-Choice Question?',
+                                    options: ['Option 1', 'Option 2', 'Option 3', 'Option 4'],
+                                    correctIndex: 0,
+                                    explanation: 'Option 1 is correct because...'
+                                  }
+                                  const questions = [...(editingNode.quizQuestions || []), newQ]
+                                  setEditingNode({ ...editingNode, quizQuestions: questions })
+                                }}
+                                className="text-[9px] text-red-655 hover:text-red-755 font-black flex items-center gap-1 bg-transparent border-none cursor-pointer"
+                              >
+                                <Plus className="w-3.5 h-3.5" /> Add Question
+                              </button>
+                            </div>
+
+                            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1">
+                              {(!editingNode.quizQuestions || editingNode.quizQuestions.length === 0) ? (
+                                <p className="text-xs text-slate-450 italic py-6 text-center">No quiz questions configured. Click 'Add Question' above.</p>
+                              ) : (
+                                editingNode.quizQuestions.map((q, qIdx) => (
+                                  <div key={qIdx} className="p-4 border border-slate-200 rounded-xl bg-slate-50 space-y-3 relative text-left">
+                                    <div className="absolute top-3 right-3">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const questions = editingNode.quizQuestions?.filter((_, idx) => idx !== qIdx) || []
+                                          setEditingNode({ ...editingNode, quizQuestions: questions })
+                                        }}
+                                        className="text-[9px] text-red-600 hover:text-red-800 font-bold bg-transparent border-none cursor-pointer"
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+
+                                    <div className="flex flex-col gap-1 max-w-[85%]">
+                                      <span className="text-[9px] font-black text-slate-450 uppercase">Question {qIdx + 1}</span>
+                                      <input
+                                        type="text"
+                                        value={q.question}
+                                        onChange={(e) => {
+                                          const questions = [...(editingNode.quizQuestions || [])]
+                                          questions[qIdx].question = e.target.value
+                                          setEditingNode({ ...editingNode, quizQuestions: questions })
+                                        }}
+                                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-slate-350 transition font-bold text-slate-805"
+                                      />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {q.options.map((opt, oIdx) => (
+                                        <div key={oIdx} className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-2 py-1">
+                                          <input
+                                            type="radio"
+                                            name={`q_${qIdx}_correct`}
+                                            checked={q.correctIndex === oIdx}
+                                            onChange={() => {
+                                              const questions = [...(editingNode.quizQuestions || [])]
+                                              questions[qIdx].correctIndex = oIdx
+                                              setEditingNode({ ...editingNode, quizQuestions: questions })
+                                            }}
+                                            className="cursor-pointer"
+                                          />
+                                          <input
+                                            type="text"
+                                            value={opt}
+                                            onChange={(e) => {
+                                              const questions = [...(editingNode.quizQuestions || [])]
+                                              questions[qIdx].options[oIdx] = e.target.value
+                                              setEditingNode({ ...editingNode, quizQuestions: questions })
+                                            }}
+                                            className="w-full bg-transparent border-none outline-none text-xs text-slate-800 focus:bg-slate-50 px-1 py-0.5 rounded"
+                                          />
+                                        </div>
+                                      ))}
+                                    </div>
+
+                                    <div className="flex flex-col gap-1">
+                                      <label className="text-[9px] font-black uppercase text-slate-455">Explanation & Answer Insight</label>
+                                      <input
+                                        type="text"
+                                        value={q.explanation || ''}
+                                        onChange={(e) => {
+                                          const questions = [...(editingNode.quizQuestions || [])]
+                                          questions[qIdx].explanation = e.target.value
+                                          setEditingNode({ ...editingNode, quizQuestions: questions })
+                                        }}
+                                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-slate-350 transition text-slate-700"
+                                      />
+                                    </div>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* PROJECT SPEC TAB */}
+                        {nodeEditorTab === 'project' && (
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-2">
+                              <input 
+                                type="checkbox" 
+                                id="hasProjectSpec" 
+                                checked={!!editingNode.projectSpec}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setEditingNode({
+                                      ...editingNode,
+                                      projectSpec: {
+                                        title: 'Build ' + editingNode.name,
+                                        desc: 'Construct a production-ready application showcasing these skills.',
+                                        deliverables: ['GitHub repository with rich README', 'Fully styled live hosting URL']
+                                      }
+                                    })
+                                  } else {
+                                    const copy = { ...editingNode }
+                                    delete copy.projectSpec
+                                    setEditingNode(copy)
+                                  }
+                                }}
+                                className="cursor-pointer"
+                              />
+                              <label htmlFor="hasProjectSpec" className="text-xs font-bold text-slate-700 cursor-pointer">
+                                Enable Capstone Project Submission for this Node
+                              </label>
+                            </div>
+
+                            {editingNode.projectSpec && (
+                              <div className="p-4 border border-slate-200 rounded-2xl space-y-4 text-left">
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Project Title</label>
+                                  <input
+                                    type="text"
+                                    value={editingNode.projectSpec.title || ''}
+                                    onChange={(e) => {
+                                      const spec = { ...editingNode.projectSpec!, title: e.target.value }
+                                      setEditingNode({ ...editingNode, projectSpec: spec })
+                                    }}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-brand-primary focus:bg-white transition text-slate-800 font-bold"
+                                  />
+                                </div>
+
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Project Description</label>
+                                  <textarea
+                                    rows={3}
+                                    value={editingNode.projectSpec.desc || ''}
+                                    onChange={(e) => {
+                                      const spec = { ...editingNode.projectSpec!, desc: e.target.value }
+                                      setEditingNode({ ...editingNode, projectSpec: spec })
+                                    }}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-brand-primary focus:bg-white transition font-sans resize-y text-slate-705"
+                                  />
+                                </div>
+
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-[9px] font-black uppercase tracking-wider text-slate-500">Deliverables List (one per line)</label>
+                                  <textarea
+                                    rows={3}
+                                    value={editingNode.projectSpec.deliverables?.join('\n') || ''}
+                                    onChange={(e) => {
+                                      const spec = { ...editingNode.projectSpec!, deliverables: e.target.value.split('\n').map(s => s.trim()).filter(Boolean) }
+                                      setEditingNode({ ...editingNode, projectSpec: spec })
+                                    }}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:border-brand-primary focus:bg-white transition font-sans resize-y text-slate-705"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                      </div>
+
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
             </div>
           )}
 

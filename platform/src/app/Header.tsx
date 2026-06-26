@@ -165,6 +165,13 @@ export default function Header() {
             >
               Explore Courses
             </Link>
+            <Link
+              href="/roadmaps"
+              className={`text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${pathname.startsWith('/roadmaps') ? 'text-brand-secondary font-black' : 'text-slate-550 hover:text-slate-900'
+                }`}
+            >
+              Career Roadmaps
+            </Link>
 
             {user && user.role !== 'admin' && (
               <>
@@ -341,7 +348,7 @@ export default function Header() {
                           <span>AI Study Mentor</span>
                         </Link>
                         <Link
-                          href="/courses?tab=roadmap"
+                          href="/roadmaps"
                           onClick={() => setDropdownOpen(false)}
                           className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
                         >

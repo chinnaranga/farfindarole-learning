@@ -20,6 +20,7 @@ import {
   type CareerPath
 } from '@/lib/supabase'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   BookOpen, Search, Filter, Loader2, ArrowRight, Sparkles, Trophy,
   Zap, Award, ChevronRight, Star, Play, Users, CheckCircle, Calendar,
@@ -151,6 +152,7 @@ function StarRating({ rating, count }: { rating: number | null, count: number })
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function CoursesPage() {
+  const router = useRouter()
   // ── Data state ───────────────────────────────────────────────────────────────
   const [courses, setCourses] = useState<Course[]>([])
   const [careerPaths, setCareerPaths] = useState<CareerPath[]>([])
@@ -689,7 +691,13 @@ Provide concise, actionable career and learning advice. Be encouraging but speci
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveSection(tab.id as any)}
+              onClick={() => {
+                if (tab.id === 'roadmap') {
+                  router.push('/roadmaps')
+                } else {
+                  setActiveSection(tab.id as any)
+                }
+              }}
               className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition flex-shrink-0 cursor-pointer ${
                 activeSection === tab.id
                   ? 'bg-red-600 text-white shadow-sm'
@@ -1029,8 +1037,7 @@ Provide concise, actionable career and learning advice. Be encouraging but speci
                       {/* CTA */}
                       <button
                         onClick={() => {
-                          setRoadmapTargetRole(path.role_name)
-                          setActiveSection('roadmap')
+                          router.push(`/roadmaps?target=${encodeURIComponent(path.role_name)}`)
                         }}
                         className="mt-3 w-full flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer"
                       >

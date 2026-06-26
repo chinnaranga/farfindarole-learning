@@ -2,6 +2,7 @@ import { supabase } from './supabase'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const RESEND_TEST_RECIPIENT = process.env.RESEND_TEST_RECIPIENT
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'FarFindARole Learn <no-reply@learn.farfindarole.com>'
 
 export interface SendEmailParams {
   to: string
@@ -57,7 +58,7 @@ ${html}
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from: 'FarFindARole Learn <onboarding@resend.dev>', // Resend sandbox default from address
+          from: RESEND_FROM_EMAIL,
           to: targetRecipient,
           subject: subject,
           html: html,
