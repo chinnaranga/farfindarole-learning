@@ -431,7 +431,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading || !agreeTerms || !agreePrivacy || !isPasswordValid}
-              className="w-full bg-gradient-to-r from-red-600 to-amber-500 hover:from-red-750 hover:to-amber-600 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs shadow-md transition active:scale-[0.98] disabled:opacity-40 select-none cursor-pointer uppercase tracking-wider"
+              className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs shadow-md transition active:scale-[0.98] disabled:opacity-40 select-none cursor-pointer uppercase tracking-wider"
             >
               {loading ? (
                 <>

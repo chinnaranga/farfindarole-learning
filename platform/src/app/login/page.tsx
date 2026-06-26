@@ -368,18 +368,18 @@ export default function LoginPage() {
           </div>
 
           {/* Promo Section */}
-          <div className="p-4 bg-amber-50 border border-amber-250 rounded-2xl flex items-start gap-3 mt-2 shadow-xs">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center text-amber-600 flex-shrink-0 mt-0.5">
-              <Crown className="w-4.5 h-4.5 fill-current" />
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-start gap-3 mt-2 shadow-xs">
+            <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary flex-shrink-0 mt-0.5">
+              <Shield className="w-4.5 h-4.5" />
             </div>
             <div className="flex-1 text-left">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">Student Pro Promotion</h4>
-                <span className="text-[8px] font-black bg-amber-500 text-slate-900 px-1.5 py-0.5 rounded-full uppercase leading-none scale-90 origin-right">Upgrade</span>
+                <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">Sponsorship Active</h4>
+                <span className="text-[8px] font-black bg-brand-primary text-white px-1.5 py-0.5 rounded-full uppercase leading-none scale-90 origin-right">Unlocked</span>
               </div>
-              <p className="text-[10px] text-slate-550 mt-1.5 leading-normal">Unlock: Premium Courses, AI Mentor, Interview Prep, Personalized Roadmaps, and Certificates.</p>
-              <Link href="/pricing" className="inline-flex items-center gap-0.5 text-[9px] font-black text-red-655 hover:underline mt-2">
-                Learn More <ArrowRight className="w-3 h-3" />
+              <p className="text-[10px] text-slate-550 mt-1.5 leading-normal">All student workstations are currently unlocked. Enjoy full, sponsored access to premium courses, coding playgrounds, AI mentors, and certifications.</p>
+              <Link href="/pricing" className="inline-flex items-center gap-0.5 text-[9px] font-black text-brand-secondary hover:underline mt-2">
+                View Sponsorship Details <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
           </div>
